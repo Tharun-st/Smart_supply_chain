@@ -1,0 +1,653 @@
+{% extends "layout.html" %}
+
+{% block title %}DSA Laboratory — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== DSA LAB HERO BANNER ==================== -->
+<div class="dsa-hero-card">
+  <div style="position:relative; z-index:2;">
+    <span style="font-size:0.75rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-primary-blue); background:rgba(37, 99, 235, 0.2); padding:3px 10px; border-radius:var(--radius-full); margin-bottom:8px; display:inline-block;">
+      ALGORITHM VISUALIZATION LABORATORY
+    </span>
+    <h2 class="dsa-hero-title">DATA STRUCTURES LAB</h2>
+    <p class="dsa-hero-desc">
+      Interactive visualization of the core data structures and algorithmic paradigms powering the Intelligent Supply Chain Optimization System. Connected directly to Python in-memory implementations.
+    </p>
+
+    <!-- Lab Tab Navigation -->
+    <div style="display:flex; gap:8px; margin-top:20px; flex-wrap:wrap;">
+      <button class="pill-tab {% if tab == 'linked_list' or not tab %}active{% endif %}" onclick="switchLabTab('linked_list')">
+        Linked List (O(1) Head / O(n) End)
+      </button>
+      <button class="pill-tab {% if tab == 'queue' %}active{% endif %}" onclick="switchLabTab('queue')">
+        Queue (FIFO Order Dispatch)
+      </button>
+      <button class="pill-tab {% if tab == 'bst' %}active{% endif %}" onclick="switchLabTab('bst')">
+        BST (O(log n) Stock Tree)
+      </button>
+      <button class="pill-tab {% if tab == 'graph' %}active{% endif %}" onclick="switchLabTab('graph')">
+        Graph & BFS (Shortest Hop)
+      </button>
+      <a href="/search" class="pill-tab" style="background:rgba(255,255,255,0.1); color:#fff;">
+        Binary Search Lab →
+      </a>
+      <a href="/optimization" class="pill-tab" style="background:rgba(255,255,255,0.1); color:#fff;">
+        Greedy Selection Lab →
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 1: LINKED LIST LAB ==================== -->
+<div class="dsa-tab-pane" id="pane-linked_list" style="display:none;">
+  <div class="grid-2-1">
+    <!-- LEFT: LINKED LIST CONTROLS -->
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div>
+          <div class="sc-card-title">Linked List Operations</div>
+          <div class="sc-card-subtitle">Pointer manipulation on dynamic memory nodes</div>
+        </div>
+        <span class="badge-subtle blue">Singly Linked List</span>
+      </div>
+      <div class="sc-card-body">
+        <div class="form-group">
+          <label class="form-label">Record Value / Item Name</label>
+          <input type="text" id="labLlInput" class="form-control" placeholder="e.g. Microcontroller X" value="Sensor Array" />
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 16px;">
+          <button class="btn btn-primary btn-sm" onclick="execLabLlInsert('beginning')">
+            Insert at Head O(1)
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="execLabLlInsert('end')">
+            Insert at End O(n)
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="execLabLlSearch()">
+            Search Node O(n)
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="execLabLlDelete()">
+            Delete by ID O(n)
+          </button>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="execLabLlTraverse()">
+          Traverse & Animate Pointer Chain O(n)
+        </button>
+
+        <div style="margin-top: 20px; padding: 14px; background: var(--color-bg); border-radius: var(--radius-md); font-size: 0.78rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+            <span>Total Nodes:</span>
+            <strong id="labLlNodeCount">0</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+            <span>Head Node:</span>
+            <strong id="labLlHeadNode" style="color:var(--color-primary-blue);">None</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span>Tail Node:</span>
+            <strong id="labLlTailNode">None</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: LINKED LIST VISUALIZATION CANVAS -->
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div>
+          <div class="sc-card-title">LINKED LIST VISUALIZATION</div>
+          <div class="sc-card-subtitle">Pointer linkages: HEAD ➔ [Node] ➔ [Node] ➔ NULL</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="reloadLabLinkedList()">Refresh</button>
+      </div>
+      <div class="sc-card-body" style="background:#F8FAFC; min-height: 260px; overflow-x:auto; display:flex; align-items:center;">
+        <div class="ll-track" id="labLlCanvasTrack">
+          <!-- Rendered by visualizers.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: QUEUE LAB ==================== -->
+<div class="dsa-tab-pane" id="pane-queue" style="display:none;">
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">FIFO QUEUE (FIRST IN ➔ FIRST OUT)</div>
+        <div class="sc-card-subtitle">Pending customer order dispatch sequencing</div>
+      </div>
+      <span class="badge-subtle amber">LinkedListQueue</span>
+    </div>
+    <div class="sc-card-body">
+      <!-- Top Queue Controls -->
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border);">
+        <input type="text" id="labQueueInput" class="form-control" style="width:200px;" placeholder="Order / Item Name" value="ORD-Express" />
+        <button class="btn btn-primary btn-sm" onclick="execLabQueueEnqueue()">
+          Enqueue (Rear) O(1)
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="execLabQueueDequeue()">
+          Dequeue (Front) O(1)
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="execLabQueuePeek()">
+          Peek Front O(1)
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="loadPendingOrdersIntoQueue()">
+          Load Pending Orders from DB
+        </button>
+      </div>
+
+      <!-- Horizontal Queue Visualizer -->
+      <div class="queue-visual-stage" style="background:#F8FAFC; min-height: 180px; display:flex; align-items:center;">
+        <div style="width:100%;">
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; color:var(--color-text-muted); margin-bottom: 8px;">
+            <span style="color:var(--color-success);">▼ FRONT (Oldest Order)</span>
+            <span style="color:var(--color-primary-blue);">▲ REAR (Newest Order)</span>
+          </div>
+          <div class="queue-track-v2" id="labQueueVisualTrack">
+            <!-- Rendered by visualizers.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Queue Metrics & History -->
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-top: 20px;">
+        <div style="padding:12px; background:var(--color-bg); border-radius:var(--radius-md);">
+          <span style="font-size:0.72rem; color:var(--color-text-muted); font-weight:700;">QUEUE SIZE</span>
+          <div style="font-size:1.4rem; font-weight:800;" id="labQueueSizeVal">0</div>
+        </div>
+        <div style="padding:12px; background:var(--color-bg); border-radius:var(--radius-md);">
+          <span style="font-size:0.72rem; color:var(--color-text-muted); font-weight:700;">FRONT ELEMENT</span>
+          <div style="font-size:1.1rem; font-weight:700; color:var(--color-success);" id="labQueueFrontVal">None</div>
+        </div>
+        <div style="padding:12px; background:var(--color-bg); border-radius:var(--radius-md);">
+          <span style="font-size:0.72rem; color:var(--color-text-muted); font-weight:700;">TIME COMPLEXITY</span>
+          <div style="font-size:0.95rem; font-weight:700; color:var(--color-primary-blue);">Enqueue: O(1) | Dequeue: O(1)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: BST LAB ==================== -->
+<div class="dsa-tab-pane" id="pane-bst" style="display:none;">
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">BINARY SEARCH TREE (BST) VISUALIZER</div>
+        <div class="sc-card-subtitle">Hierarchical logarithmic search & stock indexing</div>
+      </div>
+      <span class="badge-subtle purple">Tree Structure</span>
+    </div>
+    <div class="sc-card-body">
+      <!-- BST Controls -->
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom: 16px;">
+        <input type="number" id="labBstInput" class="form-control" style="width:130px;" placeholder="Key (e.g. 55)" value="55" />
+        <button class="btn btn-primary btn-sm" onclick="execLabBstInsert()">Insert Key</button>
+        <button class="btn btn-outline btn-sm" onclick="execLabBstSearch()">🔍 Search Key</button>
+        <button class="btn btn-danger btn-sm" onclick="execLabBstDelete()">Delete Key</button>
+        <div style="display:flex; gap:6px; margin-left:auto;">
+          <button class="btn btn-secondary btn-sm" onclick="execLabBstTraverse('inorder')">Inorder O(n)</button>
+          <button class="btn btn-secondary btn-sm" onclick="execLabBstTraverse('preorder')">Preorder</button>
+          <button class="btn btn-secondary btn-sm" onclick="execLabBstTraverse('postorder')">Postorder</button>
+        </div>
+      </div>
+
+      <!-- Search Path Banner -->
+      <div id="labBstSearchPathBanner" style="display:none; padding:10px 16px; background:var(--color-blue-light); border:1px solid rgba(37,99,235,0.2); border-radius:var(--radius-md); margin-bottom:16px; font-size:0.85rem;">
+        <strong>Search Path:</strong> <span id="labBstSearchPathText" style="font-family:var(--font-mono); color:var(--color-primary-blue);">--</span>
+      </div>
+
+      <!-- Tree SVG Canvas -->
+      <div id="labBstCanvasContainer" style="background:#FFFFFF; border:1px solid var(--color-border); border-radius:var(--radius-md); min-height:360px; overflow:auto; display:flex; justify-content:center; align-items:center;">
+        <!-- Injected by visualizers.js -->
+      </div>
+
+      <!-- Traversal Output Box -->
+      <div style="margin-top: 16px; padding: 12px 16px; background: var(--color-bg); border-radius: var(--radius-md); font-size: 0.82rem; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong>Traversal Result:</strong>
+          <span id="labBstTraversalResultText" style="font-family:var(--font-mono); margin-left:8px; color:var(--color-text);">Select Inorder / Preorder / Postorder</span>
+        </div>
+        <div style="font-size:0.75rem; color:var(--color-text-muted);">
+          Height: <strong id="labBstHeightVal">3</strong> | Nodes: <strong id="labBstNodesVal">7</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: GRAPH & BFS LAB (OpenStreetMap) ==================== -->
+<div class="dsa-tab-pane" id="pane-graph" style="display:none;">
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">GRAPH &amp; BFS — LIVE DELIVERY NETWORK MAP</div>
+        <div class="sc-card-subtitle">BFS shortest-hop traversal animated on real OpenStreetMap · Adjacency List + LinkedListQueue</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span class="badge-subtle blue">Leaflet.js · OSM</span>
+        <span class="badge-subtle purple">O(V+E)</span>
+      </div>
+    </div>
+    <div class="sc-card-body" style="padding:0;">
+
+      <!-- ── Controls bar ── -->
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:14px 18px; border-bottom:1px solid var(--color-border); background:var(--color-surface);">
+        <label class="form-label" style="margin:0; font-size:0.8rem;">Start Warehouse:</label>
+        <select id="labGraphStartSelect" class="form-control" style="width:210px; font-size:0.82rem;">
+          <option value="WH-1">🏭 WH-1 — Delhi NCR Mega-Hub</option>
+          <option value="WH-2">🏭 WH-2 — Mumbai West Coast</option>
+          <option value="WH-3">🏭 WH-3 — Bengaluru South</option>
+          <option value="WH-4">🏭 WH-4 — Kolkata East Bengal</option>
+          <option value="WH-5">🏭 WH-5 — Nagpur Central</option>
+        </select>
+        <button id="bfsBtnRun" class="btn btn-primary btn-sm" onclick="execLabGraphBFS()" style="gap:6px; display:flex; align-items:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run BFS Animation
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="reloadLabNetworkGraph()" style="gap:6px; display:flex; align-items:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+          Reset Map
+        </button>
+        <!-- Speed slider -->
+        <div style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+          <span style="font-size:0.75rem; color:var(--color-text-muted); font-weight:600;">SPEED</span>
+          <input type="range" id="bfsSpeedSlider" min="200" max="2000" value="700" step="100"
+            style="width:90px; accent-color:var(--color-primary-blue);">
+          <span id="bfsSpeedLabel" style="font-size:0.75rem; color:var(--color-primary-blue); font-weight:700; width:40px;">700ms</span>
+        </div>
+      </div>
+
+      <!-- ── Legend ── -->
+      <div style="display:flex; gap:16px; flex-wrap:wrap; padding:10px 18px; background:var(--color-bg); border-bottom:1px solid var(--color-border); font-size:0.75rem; font-weight:600; color:var(--color-text-muted);">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:#2563EB;border-radius:50%;display:inline-block;"></span> Warehouse (Source)</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:#10B981;border-radius:50%;display:inline-block;"></span> Delivery Hub</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:#F59E0B;border-radius:50%;display:inline-block;"></span> BFS Visited Node</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:#EF4444;border-radius:50%;display:inline-block;"></span> BFS Start Node</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:20px;height:3px;background:#F59E0B;display:inline-block;border-radius:2px;"></span> BFS Route</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:20px;height:2px;background:#94A3B8;display:inline-block;border-radius:2px;opacity:0.6;"></span> All Routes</span>
+      </div>
+
+      <!-- ── Leaflet Map ── -->
+      <div id="bfsLeafletMap" style="height:460px; width:100%; border-radius:0;"></div>
+
+      <!-- ── BFS Stats bar ── -->
+      <div id="bfsStatsBar" style="display:none; padding:12px 18px; background:var(--color-blue-light); border-top:1px solid rgba(37,99,235,0.15); display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
+        <div style="text-align:center;">
+          <div style="font-size:0.7rem; font-weight:700; color:var(--color-text-muted); text-transform:uppercase;">Nodes Visited</div>
+          <div id="bfsStatNodes" style="font-size:1.3rem; font-weight:800; color:var(--color-primary-blue);">—</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.7rem; font-weight:700; color:var(--color-text-muted); text-transform:uppercase;">Edges Traversed</div>
+          <div id="bfsStatEdges" style="font-size:1.3rem; font-weight:800; color:var(--color-success);">—</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.7rem; font-weight:700; color:var(--color-text-muted); text-transform:uppercase;">Total Distance</div>
+          <div id="bfsStatDist" style="font-size:1.3rem; font-weight:800; color:var(--color-amber);">—</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.7rem; font-weight:700; color:var(--color-text-muted); text-transform:uppercase;">Exec Time</div>
+          <div id="bfsStatTime" style="font-size:1.3rem; font-weight:800; color:var(--color-text);">—</div>
+        </div>
+      </div>
+
+      <!-- ── BFS Step Trace ── -->
+      <div style="padding:14px 18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:0.85rem; font-weight:700; margin:0;">📋 BFS Traversal Sequence (Queue Steps):</h4>
+          <span style="font-size:0.75rem; color:var(--color-primary-blue); font-weight:600;">Time: O(V+E) · Space: O(V) · DS: LinkedListQueue</span>
+        </div>
+        <div id="labBfsTraceSequence" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--color-text); padding:10px 14px; background:#F8FAFC; border:1px solid var(--color-border); border-radius:var(--radius-md); min-height:44px; line-height:1.9;">
+          Select a start warehouse and click <strong>Run BFS Animation</strong> to watch level-by-level delivery network discovery on the map.
+        </div>
+        <div id="bfsStepLog" style="margin-top:10px; max-height:160px; overflow-y:auto; font-size:0.78rem; font-family:var(--font-mono); color:var(--color-text-muted); display:none;"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+  // ── Tab switcher ──────────────────────────────────────────────────────────
+  function switchLabTab(tabName) {
+    document.querySelectorAll('.dsa-tab-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.pill-tab').forEach(t => t.classList.remove('active'));
+    const pane = document.getElementById('pane-' + tabName);
+    if (pane) pane.style.display = 'block';
+    event?.target?.classList?.add('active');
+    if (tabName === 'linked_list') reloadLabLinkedList();
+    if (tabName === 'queue') reloadLabQueue();
+    if (tabName === 'bst') reloadLabBST();
+    if (tabName === 'graph') reloadLabNetworkGraph();
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const activeTab = "{{ tab or 'linked_list' }}";
+    switchLabTab(activeTab);
+  });
+
+  // ── Speed slider label ────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const sl = document.getElementById('bfsSpeedSlider');
+    const lb = document.getElementById('bfsSpeedLabel');
+    if (sl && lb) sl.addEventListener('input', () => lb.textContent = sl.value + 'ms');
+  });
+
+  // ── Leaflet Map State ─────────────────────────────────────────────────────
+  let _bfsMap = null;
+  let _bfsAllNodeLayers = {}; // id -> circle layer
+  let _bfsAllEdgeLayers = []; // background grey edges
+  let _bfsAnimLayers = [];    // animated markers / polylines
+  let _bfsAnimTimeout = null;
+
+  // Icon factories
+  function _makeIcon(color, size = 14) {
+    return L.divIcon({
+      className: '',
+      html: `<div style="
+        width:${size}px; height:${size}px; border-radius:50%;
+        background:${color}; border:2.5px solid #fff;
+        box-shadow:0 2px 8px rgba(0,0,0,0.35);
+        transition: transform 0.25s ease;
+      "></div>`,
+      iconSize: [size, size],
+      iconAnchor: [size/2, size/2]
+    });
+  }
+
+  function _makePulseIcon(color, size = 18) {
+    return L.divIcon({
+      className: '',
+      html: `
+        <div style="position:relative; width:${size}px; height:${size}px;">
+          <div style="
+            width:${size}px; height:${size}px; border-radius:50%;
+            background:${color}; border:3px solid #fff;
+            box-shadow:0 0 0 4px ${color}55;
+            animation: bfsPulse 1s ease-out infinite;
+          "></div>
+        </div>`,
+      iconSize: [size, size],
+      iconAnchor: [size/2, size/2]
+    });
+  }
+
+  // Inject CSS for pulse animation once
+  (function() {
+    if (document.getElementById('bfsPulseStyle')) return;
+    const s = document.createElement('style');
+    s.id = 'bfsPulseStyle';
+    s.textContent = `
+      @keyframes bfsPulse {
+        0%   { box-shadow: 0 0 0 0px rgba(245,158,11,0.7); }
+        70%  { box-shadow: 0 0 0 12px rgba(245,158,11,0); }
+        100% { box-shadow: 0 0 0 0px rgba(245,158,11,0); }
+      }
+    `;
+    document.head.appendChild(s);
+  })();
+
+  // ── Init or reset the Leaflet map ─────────────────────────────────────────
+  function _initBfsMap() {
+    if (_bfsMap) return; // already initialised
+    _bfsMap = L.map('bfsLeafletMap', {
+      center: [20.5937, 78.9629], // centre of India
+      zoom: 5,
+      zoomControl: true,
+      attributionControl: true
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(_bfsMap);
+  }
+
+  function _clearAnimLayers() {
+    if (_bfsAnimTimeout) { clearTimeout(_bfsAnimTimeout); _bfsAnimTimeout = null; }
+    _bfsAnimLayers.forEach(l => { try { _bfsMap.removeLayer(l); } catch(e) {} });
+    _bfsAnimLayers = [];
+  }
+
+  function _clearAllLayers() {
+    _clearAnimLayers();
+    _bfsAllEdgeLayers.forEach(l => { try { _bfsMap.removeLayer(l); } catch(e) {} });
+    _bfsAllEdgeLayers = [];
+    Object.values(_bfsAllNodeLayers).forEach(l => { try { _bfsMap.removeLayer(l); } catch(e) {} });
+    _bfsAllNodeLayers = {};
+  }
+
+  // ── Draw background graph (all nodes + all edges faded) ───────────────────
+  function _drawBaseGraph(allNodes, allEdges) {
+    // Edges first (below nodes)
+    allEdges.forEach(e => {
+      const pl = L.polyline(
+        [[e.source_lat, e.source_lng], [e.target_lat, e.target_lng]],
+        { color: '#94A3B8', weight: 1.5, opacity: 0.4, dashArray: '4 5' }
+      ).addTo(_bfsMap);
+      _bfsAllEdgeLayers.push(pl);
+    });
+
+    // Node markers
+    allNodes.forEach(n => {
+      if (!n.lat || !n.lng) return;
+      const color = n.type === 'warehouse' ? '#2563EB' : '#10B981';
+      const size  = n.type === 'warehouse' ? 13 : 10;
+      const m = L.marker([n.lat, n.lng], { icon: _makeIcon(color, size) })
+        .bindTooltip(`<b>${n.name}</b><br><span style="font-size:0.75rem;color:#64748B;">${n.city || n.type}</span>`, {
+          direction: 'top', offset: [0, -6], opacity: 0.95
+        })
+        .addTo(_bfsMap);
+      _bfsAllNodeLayers[n.id] = m;
+    });
+  }
+
+  // ── Animate BFS step-by-step ──────────────────────────────────────────────
+  function _animateBFS(visitedOrder, traversedEdges, allNodesMap, speedMs) {
+    _clearAnimLayers();
+    const stepLog = document.getElementById('bfsStepLog');
+    if (stepLog) { stepLog.style.display = 'block'; stepLog.innerHTML = ''; }
+
+    let stepIdx = 0;
+    const edgesByTarget = {};
+    traversedEdges.forEach(e => { edgesByTarget[e.target] = e; });
+
+    function doStep() {
+      if (stepIdx >= visitedOrder.length) return; // done
+
+      const nodeId = visitedOrder[stepIdx];
+      const nodeInfo = allNodesMap[nodeId];
+      const isStart = stepIdx === 0;
+
+      // 1. Draw the BFS route polyline leading to this node
+      if (!isStart && edgesByTarget[nodeId]) {
+        const e = edgesByTarget[nodeId];
+        const pl = L.polyline(
+          [[e.source_lat, e.source_lng], [e.target_lat, e.target_lng]],
+          { color: '#F59E0B', weight: 3.5, opacity: 0.9 }
+        ).addTo(_bfsMap);
+        // Animate dash offset to give a 'drawing' effect
+        pl.setStyle({ dashArray: '8 6', dashOffset: '0' });
+        _bfsAnimLayers.push(pl);
+
+        // Tiny distance label
+        const midLat = (e.source_lat + e.target_lat) / 2;
+        const midLng = (e.source_lng + e.target_lng) / 2;
+        const lbl = L.tooltip({ permanent: true, direction: 'center', className: 'bfs-dist-label' })
+          .setContent(`${e.distance_km} km`)
+          .setLatLng([midLat, midLng])
+          .addTo(_bfsMap);
+        _bfsAnimLayers.push(lbl);
+      }
+
+      // 2. Replace the base marker with a pulsing BFS-visited marker
+      if (_bfsAllNodeLayers[nodeId]) {
+        try { _bfsMap.removeLayer(_bfsAllNodeLayers[nodeId]); } catch(e) {}
+      }
+      if (nodeInfo && nodeInfo.lat && nodeInfo.lng) {
+        const color = isStart ? '#EF4444' : '#F59E0B';
+        const pm = L.marker([nodeInfo.lat, nodeInfo.lng], { icon: _makePulseIcon(color, 20), zIndexOffset: 1000 })
+          .bindPopup(`
+            <div style="font-family:Inter,sans-serif; min-width:160px;">
+              <div style="font-weight:800; font-size:0.9rem; color:#0F172A;">${nodeInfo.name}</div>
+              <div style="font-size:0.75rem; color:#64748B; margin-top:2px;">${nodeInfo.city || ''}</div>
+              <div style="margin-top:6px; font-size:0.78rem;">
+                <span style="background:${color}22; color:${color}; padding:2px 8px; border-radius:20px; font-weight:700;">
+                  BFS Level ${nodeInfo.bfs_level !== undefined ? nodeInfo.bfs_level : stepIdx}
+                </span>
+              </div>
+              <div style="font-size:0.72rem; color:#94A3B8; margin-top:4px;">${isStart ? '▶ Start Node' : 'Visited in step ' + (stepIdx+1)}</div>
+            </div>
+          `, { maxWidth: 220 })
+          .addTo(_bfsMap);
+        pm.openPopup();
+        _bfsAnimLayers.push(pm);
+        _bfsAllNodeLayers[nodeId] = pm;
+      }
+
+      // 3. Update step log
+      if (stepLog) {
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:2px 0; animation:fadeIn 0.3s ease;';
+        row.innerHTML = `<span style="color:#94A3B8;">Step ${String(stepIdx+1).padStart(2,'0')}:</span> `
+          + `<span style="color:${isStart ? '#EF4444' : '#F59E0B'}; font-weight:700;">${nodeId}</span> `
+          + `<span style="color:#64748B;">— ${nodeInfo?.name || ''}${nodeInfo?.city ? ' · '+nodeInfo.city : ''}</span>`;
+        stepLog.appendChild(row);
+        stepLog.scrollTop = stepLog.scrollHeight;
+      }
+
+      stepIdx++;
+      _bfsAnimTimeout = setTimeout(doStep, speedMs);
+    }
+
+    doStep();
+  }
+
+  // ── reloadLabNetworkGraph: load map base graph ─────────────────────────────
+  window.reloadLabNetworkGraph = function reloadLabNetworkGraph() {
+    _initBfsMap();
+    _clearAllLayers();
+    document.getElementById('labBfsTraceSequence').innerHTML =
+      'Loading delivery network from server…';
+    document.getElementById('bfsStepLog').style.display = 'none';
+    document.getElementById('bfsStepLog').innerHTML = '';
+    document.getElementById('bfsStatsBar').style.display = 'none';
+
+    fetch('/api/network')
+      .then(r => r.json())
+      .then(data => {
+        if (data.status !== 'success') throw new Error('Failed to load network');
+        const nodes = data.graph?.nodes || [];
+        const links = data.graph?.links || [];
+
+        // Build edges with coords from nodes
+        const nodeMap = {};
+        nodes.forEach(n => { nodeMap[n.id] = n; });
+        const allEdgesGeo = [];
+        links.forEach(l => {
+          const sv = nodeMap[l.source], dv = nodeMap[l.target];
+          if (sv && dv && sv.lat && sv.lng && dv.lat && dv.lng) {
+            allEdgesGeo.push({
+              source: l.source, target: l.target,
+              distance_km: l.distance_km,
+              source_lat: sv.lat, source_lng: sv.lng,
+              target_lat: dv.lat, target_lng: dv.lng
+            });
+          }
+        });
+
+        _drawBaseGraph(nodes, allEdgesGeo);
+        document.getElementById('labBfsTraceSequence').innerHTML =
+          `<span style="color:var(--color-success); font-weight:700;">✓ Network loaded:</span> `
+          + `${nodes.length} nodes · ${links.length} routes · Select a start warehouse and click <strong>Run BFS Animation</strong>.`;
+      })
+      .catch(err => {
+        document.getElementById('labBfsTraceSequence').textContent = '⚠ ' + err.message;
+      });
+  }
+
+  // ── execLabGraphBFS: run BFS + animate ────────────────────────────────────
+  window.execLabGraphBFS = function execLabGraphBFS() {
+    _initBfsMap();
+    const startNode = document.getElementById('labGraphStartSelect').value;
+    const speedMs   = parseInt(document.getElementById('bfsSpeedSlider')?.value || 700);
+    const btn = document.getElementById('bfsBtnRun');
+    if (btn) { btn.disabled = true; btn.textContent = 'Running…'; }
+
+    document.getElementById('labBfsTraceSequence').innerHTML = '⏳ Running BFS from <strong>' + startNode + '</strong>…';
+    document.getElementById('bfsStepLog').style.display = 'none';
+    document.getElementById('bfsStepLog').innerHTML = '';
+
+    fetch('/api/network/bfs-map', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ start_node: startNode })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status !== 'success') throw new Error(data.message || 'BFS failed');
+
+        // Rebuild the base graph with geo-enriched all_nodes + all_edges
+        _clearAllLayers();
+        _drawBaseGraph(data.all_nodes, data.all_edges);
+
+        // Build a lookup map for node info
+        const allNodesMap = {};
+        data.all_nodes.forEach(n => { allNodesMap[n.id] = n; });
+
+        // Compute total distance
+        let totalKm = 0;
+        data.traversed_edges.forEach(e => { totalKm += (e.distance_km || 0); });
+
+        // Update stats bar
+        document.getElementById('bfsStatsBar').style.display = 'grid';
+        document.getElementById('bfsStatNodes').textContent = data.visited_order.length;
+        document.getElementById('bfsStatEdges').textContent = data.traversed_edges.length;
+        document.getElementById('bfsStatDist').textContent = Math.round(totalKm) + ' km';
+        document.getElementById('bfsStatTime').textContent = data.elapsed_ms + ' ms';
+
+        // BFS sequence text
+        const seq = data.visited_order.map((id, i) => {
+          const n = allNodesMap[id];
+          const lvl = data.levels?.[id] ?? i;
+          return `<span style="display:inline-block; margin:2px 4px; padding:2px 8px; background:rgba(37,99,235,0.08); border-radius:12px; font-size:0.78rem;">`
+            + `<b style="color:var(--color-primary-blue);">${id}</b>`
+            + `<span style="color:#94A3B8;"> L${lvl}</span></span>`;
+        }).join('→');
+        document.getElementById('labBfsTraceSequence').innerHTML = seq;
+
+        // Fit map to visited bounds
+        const pts = data.all_nodes
+          .filter(n => n.lat && n.lng)
+          .map(n => [n.lat, n.lng]);
+        if (pts.length > 1) _bfsMap.fitBounds(L.latLngBounds(pts), { padding: [40, 40] });
+
+        // Animate!
+        _animateBFS(data.visited_order, data.traversed_edges, allNodesMap, speedMs);
+
+        if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run BFS Animation'; }
+      })
+      .catch(err => {
+        document.getElementById('labBfsTraceSequence').textContent = '⚠ Error: ' + err.message;
+        if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run BFS Animation'; }
+      });
+  }
+
+  // Leaflet tooltip style for distance labels
+  (function() {
+    const s = document.createElement('style');
+    s.textContent = `
+      .bfs-dist-label { background:none!important; border:none!important;
+        box-shadow:none!important; font-size:0.68rem; font-weight:700;
+        color:#F59E0B; white-space:nowrap; font-family:monospace; }
+      .bfs-dist-label::before { display:none!important; }
+      @keyframes fadeIn { from { opacity:0; transform:translateX(-4px); } to { opacity:1; } }
+    `;
+    document.head.appendChild(s);
+  })();
+</script>
+{% endblock %}

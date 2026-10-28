@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}System Architecture & Overview — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Academic Project Architecture</h2>
+    <p class="page-hero-sub">Data Structures and Algorithmic Problem Solving in Modern Supply Chain Operations.</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button class="btn btn-outline btn-sm" onclick="window.print()">
+      📄 Print Documentation
+    </button>
+  </div>
+</div>
+
+<div style="display:flex; flex-direction:column; gap:20px; max-width:1100px;">
+  <!-- SECTION 1: TITLE & PROJECT IDENTITY -->
+  <div class="dsa-hero-card">
+    <div style="position:relative; z-index:2;">
+      <span style="font-size:0.75rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-primary-blue); background:rgba(37, 99, 235, 0.2); padding:3px 10px; border-radius:var(--radius-full); margin-bottom:8px; display:inline-block;">
+        FINAL YEAR ACADEMIC PROJECT
+      </span>
+      <h2 class="dsa-hero-title">INTELLIGENT SUPPLY CHAIN OPTIMIZATION SYSTEM</h2>
+      <p class="dsa-hero-desc">
+        A comprehensive Data Structures and Algorithmic Problem Solving implementation integrating dynamic memory structures (Singly Linked Lists, FIFO Queues, Binary Search Trees, and Weighted Adjacency List Graphs) with classical algorithmic paradigms (Linear & Binary Search, Breadth-First Search, and Greedy Optimization).
+      </p>
+    </div>
+  </div>
+
+  <!-- SECTION 2: ARCHITECTURAL AREAS -->
+  <div class="grid-3col">
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div class="sc-card-title">1. Supply Chain Core</div>
+      </div>
+      <div class="sc-card-body" style="font-size:0.86rem; color:var(--color-text-muted); line-height:1.6;">
+        Manages catalog products, vendor reliability metrics, multi-warehouse capacity tracking, and fulfillment order dispatches backed by relational MySQL / SQLite storage.
+      </div>
+    </div>
+
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div class="sc-card-title">2. DSA Laboratory</div>
+      </div>
+      <div class="sc-card-body" style="font-size:0.86rem; color:var(--color-text-muted); line-height:1.6;">
+        Real in-memory Python algorithmic implementations powering live visualizers for Linked Lists, FIFO Queues, Binary Search Trees, Network Graphs, and Divide & Conquer Search.
+      </div>
+    </div>
+
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div class="sc-card-title">3. Optimization & Analytics</div>
+      </div>
+      <div class="sc-card-body" style="font-size:0.86rem; color:var(--color-text-muted); line-height:1.6;">
+        Greedy nearest-warehouse facility selection minimizing logistics freight transit distances, coupled with Chart.js executive telemetry and SQL developer console.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

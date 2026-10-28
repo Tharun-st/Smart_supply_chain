@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+
+{% block title %}Optimization Laboratory — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Supply Chain Optimization</h2>
+    <p class="page-hero-sub">Algorithmic optimization suites: Greedy Warehouse Selection and Multi-Criteria Supplier Ranking.</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a href="/greedy" class="btn btn-primary btn-sm">Greedy Warehouse Selection →</a>
+  </div>
+</div>
+
+<!-- ==================== TAB NAVIGATION ==================== -->
+<div class="pill-tabs" style="margin-bottom: 24px;">
+  <button class="pill-tab active" onclick="switchOptimizationTab('greedy', this)">
+    ⚡ Greedy Warehouse Selection
+  </button>
+  <button class="pill-tab" onclick="switchOptimizationTab('suppliers', this)">
+    🏭 Multi-Criteria Supplier Selection
+  </button>
+</div>
+
+<!-- TAB 1: GREEDY WAREHOUSE SELECTION -->
+<div id="optTab-greedy" class="opt-tab-content">
+  <div class="sc-card" style="border: 2px solid rgba(37, 99, 235, 0.2);">
+    <div class="sc-card-header" style="background: var(--color-blue-light);">
+      <div class="sc-card-title" style="color:var(--color-primary-blue);">
+        Greedy Nearest Warehouse Fulfillment (Local Optimal Choice)
+      </div>
+      <span class="badge-subtle blue">O(W)</span>
+    </div>
+    <div class="sc-card-body">
+      <div class="grid-3col">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Product Item</label>
+          <select id="optProductSelect" class="form-control" onchange="runOptGreedyPreview()">
+            <option value="">Loading products...</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Required Quantity</label>
+          <input type="number" id="optQuantityInput" class="form-control" value="50" min="1" oninput="runOptGreedyPreview()" />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Destination Hub</label>
+          <select id="optLocationSelect" class="form-control" onchange="runOptGreedyPreview()">
+            <option value="">Loading hubs...</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; justify-content:flex-end;">
+        <button class="btn btn-primary" onclick="executeOptGreedyAlgorithm()">
+          ⚡ Execute Greedy Selection
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Banner -->
+  <div class="sc-card" id="optGreedyResultCard" style="display:none; border-left:6px solid var(--color-success); background:#F0FDF4;">
+    <div class="sc-card-header" style="background:#DCFCE7;">
+      <div class="sc-card-title" style="color:#166534;">Greedy Selection Decision</div>
+      <span class="badge-subtle green" id="optGreedyTime">-- ms</span>
+    </div>
+    <div class="sc-card-body">
+      <h3 style="font-size:1.3rem; font-weight:800; color:#166534;" id="optGreedyChosenName">--</h3>
+      <p style="font-size:0.88rem; color:#1e293b; margin-top:4px;" id="optGreedyChosenSummary"></p>
+    </div>
+  </div>
+
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div class="sc-card-title">Warehouse Candidate Evaluations</div>
+    </div>
+    <div class="sc-card-body">
+      <div id="optGreedyCandidatesList" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="color:var(--color-text-muted); padding:10px;">Select parameters above to evaluate warehouse candidates...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: MULTI-CRITERIA SUPPLIER SELECTION -->
+<div id="optTab-suppliers" class="opt-tab-content" style="display:none;">
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">Multi-Criteria Weighted Ranking</div>
+        <div class="sc-card-subtitle">Greedy composite score: Cost (35%) + Reliability (35%) + Speed (30%)</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="runOptSupplierSelection()">
+        Evaluate & Rank Suppliers
+      </button>
+    </div>
+    <div class="sc-card-body">
+      <div id="optSupplierRankingsContainer">
+        <div style="color:var(--color-text-muted); padding:20px; text-align:center;">
+          Click "Evaluate & Rank Suppliers" to execute multi-criteria optimization.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function switchOptimizationTab(tab, btn) {
+    document.querySelectorAll('.opt-tab-content').forEach(c => c.style.display = 'none');
+    document.querySelectorAll('.pill-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('optTab-' + tab).style.display = 'block';
+    btn.classList.add('active');
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    initGreedyModuleV2('optProductSelect', 'optLocationSelect', 'optQuantityInput', 'optGreedyCandidatesList', 'optGreedyResultCard', 'optGreedyChosenName', 'optGreedyChosenSummary', 'optGreedyTime');
+  });
+</script>
+{% endblock %}

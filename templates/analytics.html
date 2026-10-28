@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+
+{% block title %}Analytics Intelligence — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Supply Chain Intelligence & Analytics</h2>
+    <p class="page-hero-sub">Real-time telemetry, capacity breakdown, and execution performance.</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a href="/reports" class="btn btn-outline btn-sm">Full Reports →</a>
+  </div>
+</div>
+
+<!-- ==================== 4 METRIC STATS ==================== -->
+<div class="kpi-grid-4">
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Active SKUs</span>
+      <div class="kpi-icon-pill blue">🏷️</div>
+    </div>
+    <div class="kpi-value" id="anaTotalProducts">15</div>
+    <div class="kpi-trend trend-up"><span>Synchronized</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Suppliers</span>
+      <div class="kpi-icon-pill green">🏭</div>
+    </div>
+    <div class="kpi-value" id="anaTotalSuppliers">8</div>
+    <div class="kpi-trend trend-neutral"><span>Performance rated</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Total Facilities</span>
+      <div class="kpi-icon-pill purple">🏢</div>
+    </div>
+    <div class="kpi-value" id="anaTotalWarehouses">5</div>
+    <div class="kpi-trend trend-up"><span>Active hubs</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Total Orders</span>
+      <div class="kpi-icon-pill amber">🛒</div>
+    </div>
+    <div class="kpi-value" id="anaTotalOrders">20</div>
+    <div class="kpi-trend trend-neutral"><span>Processed batches</span></div>
+  </div>
+</div>
+
+<!-- ==================== CHARTS GRID ==================== -->
+<div class="grid-2col">
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div class="sc-card-title">Category Share</div>
+    </div>
+    <div class="sc-card-body">
+      <div style="height:250px; position:relative;">
+        <canvas id="anaCatChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div class="sc-card-title">Warehouse Utilization (%)</div>
+    </div>
+    <div class="sc-card-body">
+      <div style="height:250px; position:relative;">
+        <canvas id="anaWhChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", async function() {
+    try {
+      const res = await fetch('/api/analytics');
+      const json = await res.json();
+      const charts = json.charts || {};
+
+      const ctx1 = document.getElementById('anaCatChart')?.getContext('2d');
+      if (ctx1 && charts.categories) {
+        new Chart(ctx1, {
+          type: 'doughnut',
+          data: {
+            labels: charts.categories.labels,
+            datasets: [{
+              data: charts.categories.counts,
+              backgroundColor: ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+
+      const ctx2 = document.getElementById('anaWhChart')?.getContext('2d');
+      if (ctx2 && charts.warehouse_utilization) {
+        new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: charts.warehouse_utilization.labels,
+            datasets: [{
+              label: 'Utilization %',
+              data: charts.warehouse_utilization.utilization,
+              backgroundColor: '#2563EB',
+              borderRadius: 6
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+    } catch(e) {}
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block title %}Greedy Warehouse Selection — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">WAREHOUSE SELECTION — Greedy Optimization</h2>
+    <p class="page-hero-sub">Locally optimal nearest suitable facility selection minimizing transportation distance and freight costs.</p>
+  </div>
+  <div>
+    <a href="/ds/linked-list" class="btn btn-outline btn-sm">DSA Lab Hub</a>
+  </div>
+</div>
+
+<!-- ==================== INPUT CONTROLS ==================== -->
+<div class="sc-card" style="border: 2px solid rgba(37, 99, 235, 0.25);">
+  <div class="sc-card-header" style="background: var(--color-blue-light);">
+    <div class="sc-card-title" style="color: var(--color-primary-blue);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Fulfillment Request Parameters
+    </div>
+    <span class="badge-subtle blue">Greedy Heuristic: min(distance | stock ≥ qty)</span>
+  </div>
+  <div class="sc-card-body">
+    <div class="grid-3col">
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">Requested Product *</label>
+        <select id="greedyProductSelect" class="form-control" onchange="runGreedyPreview()">
+          <option value="">Loading products...</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">Required Quantity (Units) *</label>
+        <input type="number" id="greedyQuantityInput" class="form-control" value="40" min="1" oninput="runGreedyPreview()" />
+      </div>
+
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">Delivery Destination Hub *</label>
+        <select id="greedyLocationSelect" class="form-control" onchange="runGreedyPreview()">
+          <option value="">Loading delivery hubs...</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px; display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" onclick="executeGreedyAlgorithmV2()">
+        ⚡ Run Greedy Selection Algorithm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GREEDY DECISION PANEL (HIGHLIGHTED) ==================== -->
+<div class="sc-card" id="greedyDecisionPanel" style="display:none; border-left: 6px solid var(--color-success); background: #F0FDF4;">
+  <div class="sc-card-header" style="background: #DCFCE7;">
+    <div>
+      <div class="sc-card-title" style="color: #166534;">
+        🏆 GREEDY DECISION: OPTIMAL FACILITY ALLOCATED
+      </div>
+      <div class="sc-card-subtitle" style="color: #15803D;">Locally optimal nearest facility satisfying capacity constraint</div>
+    </div>
+    <span class="badge-subtle green" id="greedyElapsedBadge">0.32 ms</span>
+  </div>
+
+  <div class="sc-card-body">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h3 style="font-size:1.35rem; font-weight:800; color:#166534;" id="greedySelectedWhTitle">Warehouse B</h3>
+        <p style="font-size:0.88rem; color:#1e293b; margin-top:4px;" id="greedySelectedWhSummary">
+          Nearest eligible warehouse located 10 km from destination with sufficient inventory.
+        </p>
+      </div>
+
+      <div style="text-align:right; background:#FFFFFF; padding:12px 18px; border-radius:var(--radius-md); border:1px solid #BBF7D0;">
+        <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--color-text-muted);">Estimated Freight Cost</span>
+        <div style="font-size:1.6rem; font-weight:800; color:var(--color-primary-blue);" id="greedyCostDisplay">₹870.00</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== WAREHOUSE CANDIDATES ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header">
+    <div>
+      <div class="sc-card-title">Candidate Warehouse Evaluations</div>
+      <div class="sc-card-subtitle">Feasibility check & road distance calculation to destination</div>
+    </div>
+    <span class="badge-subtle blue">5 Facilities Evaluated</span>
+  </div>
+
+  <div class="sc-card-body">
+    <div id="greedyCandidatesList" style="display:flex; flex-direction:column; gap:10px;">
+      <!-- Dynamically injected candidate cards -->
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    initGreedyModuleV2();
+  });
+</script>
+{% endblock %}

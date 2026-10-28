@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block title %}Enterprise Reports & Analytics — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Enterprise Reports & Analytics</h2>
+    <p class="page-hero-sub">Aggregated supply chain intelligence, capacity metrics, and algorithmic audit trails.</p>
+  </div>
+  <div class="pill-tabs">
+    <button class="pill-tab active" onclick="switchReportTab('inventory', this)">Inventory</button>
+    <button class="pill-tab" onclick="switchReportTab('suppliers', this)">Supplier Performance</button>
+    <button class="pill-tab" onclick="switchReportTab('orders', this)">Orders</button>
+    <button class="pill-tab" onclick="switchReportTab('warehouses', this)">Warehouse Capacity</button>
+    <button class="pill-tab" onclick="switchReportTab('deliveries', this)">Deliveries</button>
+  </div>
+</div>
+
+<!-- ==================== REPORT CONTENT SECTIONS ==================== -->
+<div id="reportSection-inventory" class="report-tab-pane">
+  <div class="grid-2col">
+    <!-- Chart 1 -->
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div class="sc-card-title">Inventory Valuation by Category</div>
+      </div>
+      <div class="sc-card-body">
+        <div style="height:260px; position:relative;">
+          <canvas id="reportCategoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart 2 -->
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div class="sc-card-title">Warehouse Stock Allocation</div>
+      </div>
+      <div class="sc-card-body">
+        <div style="height:260px; position:relative;">
+          <canvas id="reportWarehouseStockChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="reportSection-suppliers" class="report-tab-pane" style="display:none;">
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div class="sc-card-title">Supplier Reliability Score (%) vs Delivery Days</div>
+    </div>
+    <div class="sc-card-body">
+      <div style="height:300px; position:relative;">
+        <canvas id="reportSupplierPerfChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="reportSection-orders" class="report-tab-pane" style="display:none;">
+  <div class="grid-2col">
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div class="sc-card-title">Order Status Distribution</div>
+      </div>
+      <div class="sc-card-body">
+        <div style="height:260px; position:relative;">
+          <canvas id="reportOrderStatusChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <div class="sc-card-title">Order Volume by Priority</div>
+      </div>
+      <div class="sc-card-body">
+        <div style="height:260px; position:relative;">
+          <canvas id="reportOrderPriorityChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="reportSection-warehouses" class="report-tab-pane" style="display:none;">
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div class="sc-card-title">Warehouse Volumetric Capacity Utilization (%)</div>
+    </div>
+    <div class="sc-card-body">
+      <div style="height:300px; position:relative;">
+        <canvas id="reportWarehouseUtilChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="reportSection-deliveries" class="report-tab-pane" style="display:none;">
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div class="sc-card-title">Algorithm Performance & Execution Times (ms)</div>
+    </div>
+    <div class="sc-card-body">
+      <div style="height:300px; position:relative;">
+        <canvas id="reportAlgoPerfChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function switchReportTab(tab, btn) {
+    document.querySelectorAll('.report-tab-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.pill-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('reportSection-' + tab).style.display = 'block';
+    btn.classList.add('active');
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    initReportsChartsV2();
+  });
+</script>
+{% endblock %}

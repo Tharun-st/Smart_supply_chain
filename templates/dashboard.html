@@ -1,0 +1,253 @@
+{% extends "layout.html" %}
+
+{% block title %}Supply Chain Control Center — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO SECTION ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Supply Chain Overview</h2>
+    <p class="page-hero-sub">Monitor inventory, orders, warehouses and deliveries.</p>
+  </div>
+  <div class="pill-tabs">
+    <button class="pill-tab" onclick="setDashboardRange('today', this)">Today</button>
+    <button class="pill-tab active" onclick="setDashboardRange('7days', this)">Last 7 Days</button>
+    <button class="pill-tab" onclick="setDashboardRange('30days', this)">Last 30 Days</button>
+  </div>
+</div>
+
+<!-- ==================== 4 PRIMARY KPI CARDS ==================== -->
+<div class="kpi-grid-4">
+  <!-- 1. Inventory Value -->
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Inventory Value</span>
+      <div class="kpi-icon-pill blue">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="kpiInventoryVal">₹24.8L</div>
+    <div class="kpi-trend trend-up">
+      <span>↑ 8.2% this month</span>
+    </div>
+  </div>
+
+  <!-- 2. Pending Orders -->
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Pending Orders</span>
+      <div class="kpi-icon-pill amber">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="kpiPendingOrders">128</div>
+    <div class="kpi-trend trend-neutral">
+      <span>FIFO queue active</span>
+    </div>
+  </div>
+
+  <!-- 3. Warehouse Utilization -->
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Warehouse Utilization</span>
+      <div class="kpi-icon-pill purple">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="kpiAvgUtilization">76%</div>
+    <div class="kpi-trend trend-up">
+      <span>↑ 2.4% avg capacity</span>
+    </div>
+  </div>
+
+  <!-- 4. Low Stock Items -->
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Low Stock Items</span>
+      <div class="kpi-icon-pill red">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="kpiLowStockCount">14</div>
+    <div class="kpi-trend trend-down">
+      <span>Requires restock action</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== QUICK ACTION TOOLBAR ==================== -->
+<div class="action-toolbar">
+  <a href="/products" class="btn btn-outline btn-sm">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    + Product
+  </a>
+  <a href="/suppliers" class="btn btn-outline btn-sm">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    + Supplier
+  </a>
+  <a href="/orders" class="btn btn-outline btn-sm">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    + Order
+  </a>
+  <a href="/inventory" class="btn btn-outline btn-sm">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    Update Inventory
+  </a>
+  <a href="/deliveries" class="btn btn-outline btn-sm">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    View Deliveries
+  </a>
+</div>
+
+<!-- ==================== 2-COLUMN ANALYTICS LAYOUT ==================== -->
+<div class="grid-2col">
+  <!-- LEFT: ORDER ACTIVITY -->
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">Order Activity Breakdown</div>
+        <div class="sc-card-subtitle">Real-time status of all procurement pipelines</div>
+      </div>
+      <span class="badge-subtle blue" id="orderQueueActiveBadge">FIFO Queue</span>
+    </div>
+    <div class="sc-card-body">
+      <div style="height: 220px; position: relative;">
+        <canvas id="orderActivityChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: INVENTORY HEALTH -->
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">Inventory Health</div>
+        <div class="sc-card-subtitle">Stock level safety ratios across catalog</div>
+      </div>
+      <span class="badge-subtle green">Optimized</span>
+    </div>
+    <div class="sc-card-body">
+      <div class="health-meter-group">
+        <div class="health-item">
+          <div class="health-label-row">
+            <span style="color: var(--color-success); display:flex; align-items:center; gap:6px;">
+              <span class="badge-dot" style="background:var(--color-success)"></span> Healthy
+            </span>
+            <span id="healthPctHealthy">72%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill green" id="healthBarHealthy" style="width: 72%;"></div>
+          </div>
+        </div>
+
+        <div class="health-item">
+          <div class="health-label-row">
+            <span style="color: var(--color-warning); display:flex; align-items:center; gap:6px;">
+              <span class="badge-dot" style="background:var(--color-warning)"></span> Low Stock
+            </span>
+            <span id="healthPctLow">18%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill amber" id="healthBarLow" style="width: 18%;"></div>
+          </div>
+        </div>
+
+        <div class="health-item">
+          <div class="health-label-row">
+            <span style="color: var(--color-danger); display:flex; align-items:center; gap:6px;">
+              <span class="badge-dot" style="background:var(--color-danger)"></span> Out of Stock
+            </span>
+            <span id="healthPctOut">10%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill red" id="healthBarOut" style="width: 10%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); font-size: 0.76rem; color: var(--color-text-muted); display:flex; justify-content:space-between; align-items:center;">
+        <span>Safety stock buffer active on all SKUs</span>
+        <a href="/inventory" style="color: var(--color-primary-blue); font-weight: 600;">Manage Inventory →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== WAREHOUSE OVERVIEW ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header">
+    <div>
+      <div class="sc-card-title">Warehouse Network & Storage Utilization</div>
+      <div class="sc-card-subtitle">Real-time volumetric capacity across regional facilities</div>
+    </div>
+    <a href="/warehouses" class="btn btn-outline btn-sm">All Facilities</a>
+  </div>
+  <div class="sc-card-body">
+    <div class="warehouse-compact-grid" id="warehouseOverviewGrid">
+      <!-- Injected by JavaScript dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- ==================== RECENT ORDERS & LOW STOCK ALERTS ==================== -->
+<div class="grid-2-1">
+  <!-- RECENT ORDERS COMPACT TABLE -->
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">Recent Orders</div>
+        <div class="sc-card-subtitle">Latest fulfillment transactions</div>
+      </div>
+      <a href="/orders" class="btn btn-outline btn-sm">View All Orders</a>
+    </div>
+    <div class="table-responsive">
+      <table class="sc-table" id="dashboardRecentOrdersTable">
+        <thead>
+          <tr>
+            <th>ORDER</th>
+            <th>CUSTOMER</th>
+            <th>PRODUCT</th>
+            <th>WAREHOUSE</th>
+            <th>QUANTITY</th>
+            <th>STATUS</th>
+            <th>DATE</th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody id="dashboardRecentOrdersBody">
+          <tr>
+            <td colspan="8" style="text-align:center; padding: 30px; color: var(--color-text-muted);">
+              Loading orders...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LOW STOCK ALERTS PANEL -->
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">Low Stock Alerts</div>
+        <div class="sc-card-subtitle">Items at or below reorder threshold</div>
+      </div>
+      <span class="badge-subtle red" id="dashAlertCountBadge">Active</span>
+    </div>
+    <div class="sc-card-body" id="dashboardLowStockList">
+      <div style="text-align:center; padding: 30px; color: var(--color-text-muted);">
+        Loading stock alerts...
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", async function() {
+    await initDashboardV2();
+    startDashboardAutoRefresh(30000); // auto-refresh every 30 seconds
+  });
+</script>
+{% endblock %}

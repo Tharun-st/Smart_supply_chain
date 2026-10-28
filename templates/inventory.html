@@ -1,0 +1,191 @@
+{% extends "layout.html" %}
+
+{% block title %}Inventory Control — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Inventory Control</h2>
+    <p class="page-hero-sub">Multi-warehouse stock level optimization and reorder alerting.</p>
+  </div>
+  <div>
+    <button class="btn btn-primary" onclick="openAddInventoryModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Stock Record
+    </button>
+  </div>
+</div>
+
+<!-- ==================== 4 METRIC CARDS ==================== -->
+<div class="kpi-grid-4">
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Total Stock</span>
+      <div class="kpi-icon-pill blue">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="invKpiTotalStock">--</div>
+    <div class="kpi-trend trend-up"><span>Across all warehouses</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Low Stock</span>
+      <div class="kpi-icon-pill amber">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="invKpiLowStock" style="color:var(--color-warning);">--</div>
+    <div class="kpi-trend trend-neutral"><span>At or near reorder</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Out of Stock</span>
+      <div class="kpi-icon-pill red">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="invKpiOutStock" style="color:var(--color-danger);">--</div>
+    <div class="kpi-trend trend-down"><span>Critical fulfillment risk</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Warehouses</span>
+      <div class="kpi-icon-pill purple">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="invKpiWarehouses">5</div>
+    <div class="kpi-trend trend-neutral"><span>Active facilities</span></div>
+  </div>
+</div>
+
+<!-- ==================== FILTER BAR & INVENTORY TABLE ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header">
+    <div style="display:flex; gap:12px; flex-wrap:wrap; flex:1;">
+      <!-- Search -->
+      <div style="position:relative; width: 260px;">
+        <input type="text" id="inventorySearchInput" class="form-control" placeholder="Inventory search..." onkeyup="filterInventoryGrid()" />
+      </div>
+
+      <!-- Warehouse Filter -->
+      <div style="width: 200px;">
+        <select id="inventoryWarehouseFilter" class="form-control" onchange="filterInventoryGrid()">
+          <option value="">All Warehouses</option>
+          <option value="1">WH-DEL (Delhi NCR)</option>
+          <option value="2">WH-BOM (Mumbai)</option>
+          <option value="3">WH-BLR (Bengaluru)</option>
+          <option value="4">WH-CCU (Kolkata)</option>
+          <option value="5">WH-NAG (Nagpur)</option>
+        </select>
+      </div>
+
+      <!-- Stock Status Filter -->
+      <div style="width: 170px;">
+        <select id="inventoryStatusFilter" class="form-control" onchange="filterInventoryGrid()">
+          <option value="">All Stock Status</option>
+          <option value="In Stock">In Stock</option>
+          <option value="Low Stock">Low Stock</option>
+          <option value="Out of Stock">Out of Stock</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <a href="/ds/bst" class="btn btn-outline btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="19" r="3"/><circle cx="18" cy="19" r="3"/><line x1="12" y1="8" x2="6" y2="16"/><line x1="12" y1="8" x2="18" y2="16"/></svg>
+        BST Index
+      </a>
+      <button class="btn btn-outline btn-sm" onclick="exportInventoryCSV()">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="sc-table" id="inventoryTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>PRODUCT</th>
+          <th>WAREHOUSE</th>
+          <th>AVAILABLE STOCK</th>
+          <th>RESERVED</th>
+          <th>REORDER LEVEL</th>
+          <th style="min-width: 160px;">STOCK LEVEL</th>
+          <th>STATUS</th>
+          <th style="text-align:right;">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="inventoryTableBody">
+        <tr>
+          <td colspan="9" style="text-align:center; padding: 40px; color: var(--color-text-muted);">
+            Loading inventory stock records...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== ADD / EDIT INVENTORY MODAL ==================== -->
+<div class="modal-backdrop" id="inventoryModalBackdrop">
+  <div class="modal-dialog">
+    <div class="modal-header-v2">
+      <h3 class="modal-title" id="inventoryModalTitle">Add Stock Record</h3>
+      <button class="modal-close-btn" onclick="closeInventoryModal()">&times;</button>
+    </div>
+    <form id="inventoryModalForm" onsubmit="handleInventoryFormSubmit(event)">
+      <div class="modal-body-v2">
+        <input type="hidden" id="modalInvId" />
+        <div class="form-group">
+          <label class="form-label">Product *</label>
+          <select id="modalInvProductId" class="form-control" required>
+            <option value="">Select Product</option>
+            <!-- Loaded dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Warehouse Facility *</label>
+          <select id="modalInvWarehouseId" class="form-control" required>
+            <option value="1">WH-DEL (Delhi NCR)</option>
+            <option value="2">WH-BOM (Mumbai)</option>
+            <option value="3">WH-BLR (Bengaluru)</option>
+            <option value="4">WH-CCU (Kolkata)</option>
+            <option value="5">WH-NAG (Nagpur)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Available Quantity *</label>
+            <input type="number" id="modalInvQuantity" class="form-control" required min="0" placeholder="250" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reserved Quantity</label>
+            <input type="number" id="modalInvReserved" class="form-control" min="0" value="0" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reorder Level Threshold *</label>
+          <input type="number" id="modalInvReorderLevel" class="form-control" required min="1" value="50" />
+        </div>
+      </div>
+      <div class="modal-footer-v2">
+        <button type="button" class="btn btn-outline" onclick="closeInventoryModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Stock</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    initInventoryModuleV2();
+  });
+</script>
+{% endblock %}

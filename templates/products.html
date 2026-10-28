@@ -1,0 +1,202 @@
+{% extends "layout.html" %}
+
+{% block title %}Products Catalog — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO & CONTROLS ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Products</h2>
+    <p class="page-hero-sub">Manage your product catalog and inventory relationships.</p>
+  </div>
+  <div>
+    <button class="btn btn-primary" onclick="openAddProductModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Product
+    </button>
+  </div>
+</div>
+
+<!-- ==================== 4 METRIC STATS ROW ==================== -->
+<div class="kpi-grid-4">
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Total Products</span>
+      <div class="kpi-icon-pill blue">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="prodStatTotal">--</div>
+    <div class="kpi-trend trend-neutral"><span>In database catalog</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Active Products</span>
+      <div class="kpi-icon-pill green">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="prodStatActive">--</div>
+    <div class="kpi-trend trend-up"><span>Ready for fulfillment</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Low Stock</span>
+      <div class="kpi-icon-pill amber">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="prodStatLow">--</div>
+    <div class="kpi-trend trend-down"><span>At reorder threshold</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Categories</span>
+      <div class="kpi-icon-pill purple">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="prodStatCategories">--</div>
+    <div class="kpi-trend trend-neutral"><span>Industry segments</span></div>
+  </div>
+</div>
+
+<!-- ==================== FILTER TOOLBAR & TABLE ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header">
+    <div style="display:flex; gap:12px; flex-wrap:wrap; flex:1;">
+      <!-- Search products -->
+      <div style="position:relative; width: 260px;">
+        <input type="text" id="prodSearchInput" class="form-control" placeholder="Search products..." onkeyup="filterProductsGrid()" />
+      </div>
+
+      <!-- Category Filter -->
+      <div style="width: 180px;">
+        <select id="prodCategoryFilter" class="form-control" onchange="filterProductsGrid()">
+          <option value="">All Categories</option>
+          <option value="Semiconductors">Semiconductors</option>
+          <option value="Automotive Parts">Automotive Parts</option>
+          <option value="Power Storage">Power Storage</option>
+          <option value="Raw Metals">Raw Metals</option>
+          <option value="Packaging">Packaging</option>
+          <option value="Optics & Sensors">Optics & Sensors</option>
+          <option value="Industrial Chemicals">Industrial Chemicals</option>
+          <option value="Polymers & Plastics">Polymers & Plastics</option>
+        </select>
+      </div>
+
+      <!-- Supplier Filter -->
+      <div style="width: 180px;">
+        <select id="prodSupplierFilter" class="form-control" onchange="filterProductsGrid()">
+          <option value="">All Suppliers</option>
+          <!-- Loaded dynamically -->
+        </select>
+      </div>
+
+      <!-- Quick Sort Products -->
+      <div style="width: 190px;">
+        <select id="prodSortSelect" class="form-control" onchange="quickSortProductsGrid(this.value)">
+          <option value="">⚡ Quick Sort By...</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="price_desc">Price: High → Low</option>
+          <option value="stock_asc">Stock: Low → High</option>
+          <option value="stock_desc">Stock: High → Low</option>
+          <option value="name_asc">Name: A → Z</option>
+        </select>
+      </div>
+    </div>
+    <span class="badge-subtle blue" id="prodCountBadge">0 Products</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="sc-table" id="productsCatalogTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>PRODUCT</th>
+          <th>CATEGORY</th>
+          <th>SUPPLIER</th>
+          <th>WAREHOUSE</th>
+          <th>PRICE</th>
+          <th>STOCK</th>
+          <th>STATUS</th>
+          <th style="text-align:right;">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="productsCatalogBody">
+        <tr>
+          <td colspan="9" style="text-align:center; padding: 40px; color: var(--color-text-muted);">
+            Loading product catalog...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== ADD / EDIT PRODUCT MODAL ==================== -->
+<div class="modal-backdrop" id="productModalBackdrop">
+  <div class="modal-dialog">
+    <div class="modal-header-v2">
+      <h3 class="modal-title" id="productModalTitle">Add Product</h3>
+      <button class="modal-close-btn" onclick="closeProductModal()">&times;</button>
+    </div>
+    <form id="productModalForm" onsubmit="handleProductFormSubmit(event)">
+      <div class="modal-body-v2">
+        <input type="hidden" id="modalProdId" />
+        <div class="form-group">
+          <label class="form-label">Product Name *</label>
+          <input type="text" id="modalProdName" class="form-control" required placeholder="e.g. Microcontroller X-100" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select id="modalProdCategory" class="form-control" required>
+              <option value="Semiconductors">Semiconductors</option>
+              <option value="Automotive Parts">Automotive Parts</option>
+              <option value="Power Storage">Power Storage</option>
+              <option value="Raw Metals">Raw Metals</option>
+              <option value="Packaging">Packaging</option>
+              <option value="Optics & Sensors">Optics & Sensors</option>
+              <option value="Industrial Chemicals">Industrial Chemicals</option>
+              <option value="Polymers & Plastics">Polymers & Plastics</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Price (₹) *</label>
+            <input type="number" id="modalProdPrice" class="form-control" required step="0.01" min="0.01" placeholder="850.00" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Unit of Measure</label>
+            <input type="text" id="modalProdUnit" class="form-control" placeholder="units, kg, rolls" value="units" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assigned Supplier</label>
+            <select id="modalProdSupplier" class="form-control">
+              <option value="">Select Supplier</option>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer-v2">
+        <button type="button" class="btn btn-outline" onclick="closeProductModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    initProductsModuleV2();
+  });
+</script>
+{% endblock %}

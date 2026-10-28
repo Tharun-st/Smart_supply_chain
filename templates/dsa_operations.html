@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block title %}DSA Operations — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="dsa-hero-card">
+  <div style="position:relative; z-index:2;">
+    <span style="font-size:0.75rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-primary-blue); background:rgba(37, 99, 235, 0.2); padding:3px 10px; border-radius:var(--radius-full); margin-bottom:8px; display:inline-block;">
+      ALGORITHMIC SUITE
+    </span>
+    <h2 class="dsa-hero-title">DATA STRUCTURES LAB</h2>
+    <p class="dsa-hero-desc">
+      Interactive visualization of the algorithms used in the Intelligent Supply Chain Optimization System.
+    </p>
+  </div>
+</div>
+
+<!-- ==================== 6 ALGORITHM CARDS ==================== -->
+<div class="dsa-cards-grid">
+  <!-- 1. Linked List -->
+  <div class="dsa-algo-card">
+    <div>
+      <div class="dsa-algo-type">LINEAR STRUCTURE</div>
+      <div class="dsa-algo-name">Linked List</div>
+      <div class="dsa-algo-desc">
+        Dynamic pointer-chained record catalog. Demonstrates O(1) head insertion and node pointer mutations.
+      </div>
+      <div class="dsa-algo-meta">
+        <span>Time: O(1) head / O(n) end</span>
+        <span>Space: O(n)</span>
+      </div>
+    </div>
+    <a href="/ds/linked-list" class="btn btn-outline btn-sm" style="width:100%;">
+      Open Lab →
+    </a>
+  </div>
+
+  <!-- 2. Queue -->
+  <div class="dsa-algo-card">
+    <div>
+      <div class="dsa-algo-type">FIFO STRUCTURE</div>
+      <div class="dsa-algo-name">Queue</div>
+      <div class="dsa-algo-desc">
+        Strict First-In, First-Out order dispatching. Connects incoming purchase orders with fulfillment dispatchers.
+      </div>
+      <div class="dsa-algo-meta">
+        <span>Time: O(1) Enqueue / Dequeue</span>
+        <span>Space: O(n)</span>
+      </div>
+    </div>
+    <a href="/ds/queue" class="btn btn-outline btn-sm" style="width:100%;">
+      Open Lab →
+    </a>
+  </div>
+
+  <!-- 3. BST -->
+  <div class="dsa-algo-card">
+    <div>
+      <div class="dsa-algo-type">HIERARCHICAL TREE</div>
+      <div class="dsa-algo-name">Binary Search Tree</div>
+      <div class="dsa-algo-desc">
+        Logarithmic catalog and stock level indexing. Supports Inorder, Preorder, and Postorder tree traversals.
+      </div>
+      <div class="dsa-algo-meta">
+        <span>Time: O(log n) avg / O(n) worst</span>
+        <span>Space: O(h)</span>
+      </div>
+    </div>
+    <a href="/ds/bst" class="btn btn-outline btn-sm" style="width:100%;">
+      Open Lab →
+    </a>
+  </div>
+
+  <!-- 4. Graph & BFS -->
+  <div class="dsa-algo-card">
+    <div>
+      <div class="dsa-algo-type">GRAPH TOPOLOGY</div>
+      <div class="dsa-algo-name">Graph & BFS</div>
+      <div class="dsa-algo-desc">
+        Adjacency List logistics network modeling with Breadth-First Search level-by-level shortest-hop discovery.
+      </div>
+      <div class="dsa-algo-meta">
+        <span>Time: O(V + E)</span>
+        <span>Space: O(V)</span>
+      </div>
+    </div>
+    <a href="/ds/graph" class="btn btn-outline btn-sm" style="width:100%;">
+      Open Lab →
+    </a>
+  </div>
+
+  <!-- 5. Binary Search -->
+  <div class="dsa-algo-card">
+    <div>
+      <div class="dsa-algo-type">DIVIDE & CONQUER</div>
+      <div class="dsa-algo-name">Binary Search</div>
+      <div class="dsa-algo-desc">
+        Logarithmic interval halving over sorted database records with active Low, Mid, High pointer tracking.
+      </div>
+      <div class="dsa-algo-meta">
+        <span>Time: O(log n)</span>
+        <span>Space: O(1)</span>
+      </div>
+    </div>
+    <a href="/search" class="btn btn-outline btn-sm" style="width:100%;">
+      Open Lab →
+    </a>
+  </div>
+
+  <!-- 6. Greedy Selection -->
+  <div class="dsa-algo-card">
+    <div>
+      <div class="dsa-algo-type">OPTIMIZATION HEURISTIC</div>
+      <div class="dsa-algo-name">Greedy Selection</div>
+      <div class="dsa-algo-desc">
+        Locally optimal nearest facility selection satisfying customer required quantities and minimizing freight costs.
+      </div>
+      <div class="dsa-algo-meta">
+        <span>Time: O(W) facilities</span>
+        <span>Space: O(W)</span>
+      </div>
+    </div>
+    <a href="/optimization" class="btn btn-outline btn-sm" style="width:100%;">
+      Open Lab →
+    </a>
+  </div>
+</div>
+{% endblock %}

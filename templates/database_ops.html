@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+
+{% block title %}Database Operations (ADBMS) — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Database Management & Telemetry</h2>
+    <p class="page-hero-sub">Relational schema engine, indexing, views, stored routines and ACID transaction simulation.</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button class="btn btn-outline btn-sm" onclick="resetDemoData()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      Reset Seed Data
+    </button>
+  </div>
+</div>
+
+<!-- ==================== 5 DATABASE METRIC CARDS ==================== -->
+<div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:16px; margin-bottom: 24px;">
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Tables</span>
+      <div class="kpi-icon-pill blue">🗄️</div>
+    </div>
+    <div class="kpi-value" id="dbStatTables">8</div>
+    <div class="kpi-trend trend-neutral"><span>Relational entities</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Indexes</span>
+      <div class="kpi-icon-pill green">⚡</div>
+    </div>
+    <div class="kpi-value" id="dbStatIndexes">14</div>
+    <div class="kpi-trend trend-up"><span>B-Tree indexed</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Views</span>
+      <div class="kpi-icon-pill purple">👁️</div>
+    </div>
+    <div class="kpi-value" id="dbStatViews">4</div>
+    <div class="kpi-trend trend-neutral"><span>Materialized queries</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Procedures</span>
+      <div class="kpi-icon-pill amber">⚙️</div>
+    </div>
+    <div class="kpi-value" id="dbStatProcedures">3</div>
+    <div class="kpi-trend trend-neutral"><span>Stored routines</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Transactions</span>
+      <div class="kpi-icon-pill red">🔒</div>
+    </div>
+    <div class="kpi-value" id="dbStatTransactions">ACID</div>
+    <div class="kpi-trend trend-up"><span>Atomic commit/rollback</span></div>
+  </div>
+</div>
+
+<!-- ==================== DEVELOPER CONSOLE & QUERY RUNNER ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header" style="background:#0F172A; color:#FFFFFF; border-bottom:none;">
+    <div>
+      <div class="sc-card-title" style="color:#FFFFFF;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        SQL Query Console & Schema Explorer
+      </div>
+      <div class="sc-card-subtitle" style="color:rgba(255,255,255,0.7);">Execute safe SELECT queries and inspect table schemas directly</div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <select id="dbQuickQuerySelect" class="form-control" style="width:220px; height:32px; font-size:0.75rem; background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.2);" onchange="populateQuickQuery(this.value)">
+        <option value="" style="color:#000;">Quick Query Presets...</option>
+        <option value="SELECT * FROM products ORDER BY price DESC LIMIT 10;" style="color:#000;">Top 10 Products by Price</option>
+        <option value="SELECT * FROM suppliers ORDER BY reliability_score DESC;" style="color:#000;">Suppliers by Reliability</option>
+        <option value="SELECT * FROM warehouses;" style="color:#000;">All Warehouses</option>
+        <option value="SELECT * FROM orders WHERE status = 'PENDING_IN_QUEUE';" style="color:#000;">Pending Orders</option>
+        <option value="SELECT * FROM algorithm_logs ORDER BY id DESC LIMIT 10;" style="color:#000;">Recent Algorithm Logs</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="executeCustomSqlQuery()">
+        Execute Query
+      </button>
+    </div>
+  </div>
+
+  <div class="sc-card-body" style="background:#0B1120; padding:16px;">
+    <textarea id="dbQueryInput" class="form-control" style="height:90px; background:#0F172A; border-color:#334155; color:#38BDF8; font-family:var(--font-mono); font-size:0.85rem; resize:vertical;" placeholder="SELECT * FROM products LIMIT 5;">SELECT * FROM products ORDER BY id ASC LIMIT 5;</textarea>
+
+    <!-- Query Results Container -->
+    <div id="dbQueryOutputBox" style="margin-top:14px; background:#0F172A; border:1px solid #334155; border-radius:var(--radius-md); max-height:300px; overflow:auto; padding:12px;">
+      <div style="color:#94A3B8; font-size:0.8rem; font-family:var(--font-mono);">
+        Query results will appear here...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TABLE SCHEMAS ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header">
+    <div class="sc-card-title">Database Schema Directory</div>
+  </div>
+  <div class="sc-card-body">
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px;" id="dbSchemaTablesGrid">
+      <!-- Injected by JavaScript -->
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function populateQuickQuery(q) {
+    if (q) document.getElementById('dbQueryInput').value = q;
+  }
+
+  async function executeCustomSqlQuery() {
+    const q = document.getElementById('dbQueryInput').value.trim();
+    if (!q) return;
+    const box = document.getElementById('dbQueryOutputBox');
+    box.innerHTML = '<div style="color:#38BDF8; font-family:var(--font-mono);">Executing query...</div>';
+
+    try {
+      const res = await fetch('/api/db/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q })
+      });
+      const json = await res.json();
+      if (json.status === 'success') {
+        const rows = json.data || [];
+        if (rows.length === 0) {
+          box.innerHTML = '<div style="color:#94A3B8; font-family:var(--font-mono);">Query returned 0 rows.</div>';
+          return;
+        }
+        const cols = Object.keys(rows[0]);
+        let html = '<table style="width:100%; color:#F8FAFC; font-family:var(--font-mono); font-size:0.75rem; border-collapse:collapse;">';
+        html += '<tr style="border-bottom:1px solid #334155; background:#1E293B;">' + cols.map(c => `<th style="padding:6px 10px; text-align:left; color:#38BDF8;">${c}</th>`).join('') + '</tr>';
+        rows.forEach(r => {
+          html += '<tr style="border-bottom:1px solid #1E293B;">' + cols.map(c => `<td style="padding:6px 10px;">${r[c] !== null ? r[c] : 'NULL'}</td>`).join('') + '</tr>';
+        });
+        html += '</table>';
+        box.innerHTML = html;
+      } else {
+        box.innerHTML = `<div style="color:#F87171; font-family:var(--font-mono);">Error: ${json.message || 'Query execution failed'}</div>`;
+      }
+    } catch (e) {
+      box.innerHTML = `<div style="color:#F87171; font-family:var(--font-mono);">Error executing query</div>`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    loadDatabaseTelemetry();
+  });
+
+  async function loadDatabaseTelemetry() {
+    try {
+      const res = await fetch('/api/system/status');
+      const json = await res.json();
+      if (json.status === 'success') {
+        const counts = json.database.table_counts;
+        const grid = document.getElementById('dbSchemaTablesGrid');
+        if (grid && counts) {
+          grid.innerHTML = Object.entries(counts).map(([tbl, cnt]) => `
+            <div style="background:var(--color-bg); padding:12px; border-radius:var(--radius-md); border:1px solid var(--color-border);">
+              <div style="font-size:0.75rem; font-weight:700; color:var(--color-primary-blue); font-family:var(--font-mono); text-transform:uppercase;">${tbl}</div>
+              <div style="font-size:1.2rem; font-weight:800; color:var(--color-text); margin-top:2px;">${cnt} records</div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch(e) {}
+  }
+</script>
+{% endblock %}

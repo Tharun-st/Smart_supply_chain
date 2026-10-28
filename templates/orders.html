@@ -1,0 +1,244 @@
+{% extends "layout.html" %}
+
+{% block title %}Order Management — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Order Management</h2>
+    <p class="page-hero-sub">Customer order processing pipeline with FIFO dispatch sequencing.</p>
+  </div>
+  <div>
+    <button class="btn btn-primary" onclick="openNewOrderModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Order
+    </button>
+  </div>
+</div>
+
+<!-- ==================== 4 ORDER STATS ==================== -->
+<div class="kpi-grid-4">
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Pending Orders</span>
+      <div class="kpi-icon-pill amber">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="orderStatPending">--</div>
+    <div class="kpi-trend trend-neutral"><span>In FIFO dispatch queue</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Processing / Dispatched</span>
+      <div class="kpi-icon-pill blue">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="orderStatProcessing">--</div>
+    <div class="kpi-trend trend-up"><span>Active fulfillment</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Completed</span>
+      <div class="kpi-icon-pill green">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="orderStatCompleted">--</div>
+    <div class="kpi-trend trend-up"><span>Successfully delivered</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Cancelled</span>
+      <div class="kpi-icon-pill red">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="orderStatCancelled">0</div>
+    <div class="kpi-trend trend-neutral"><span>Voided transactions</span></div>
+  </div>
+</div>
+
+<!-- ==================== MAIN CONTENT: 2-COLUMN (TABLE + FIFO QUEUE PANEL) ==================== -->
+<div class="grid-2-1">
+  <!-- LEFT: ORDER DIRECTORY TABLE -->
+  <div class="sc-card">
+    <div class="sc-card-header">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; flex:1;">
+        <!-- Search -->
+        <div style="position:relative; width: 240px;">
+          <input type="text" id="ordersSearchInput" class="form-control" placeholder="Search order..." onkeyup="filterOrdersGrid()" />
+        </div>
+
+        <!-- Status Filter -->
+        <div style="width: 170px;">
+          <select id="ordersStatusFilter" class="form-control" onchange="filterOrdersGrid()">
+            <option value="">All Statuses</option>
+            <option value="PENDING_IN_QUEUE">Pending in Queue</option>
+            <option value="DISPATCHED">Dispatched</option>
+            <option value="DELIVERED">Delivered</option>
+          </select>
+        </div>
+
+        <!-- Priority Filter -->
+        <div style="width: 150px;">
+          <select id="ordersPriorityFilter" class="form-control" onchange="filterOrdersGrid()">
+            <option value="">All Priorities</option>
+            <option value="1">P1 (Critical)</option>
+            <option value="2">P2 (Standard)</option>
+            <option value="3">P3 (Economy)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadOrdersModuleV2()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="sc-table" id="ordersMainTable">
+        <thead>
+          <tr>
+            <th>ORDER</th>
+            <th>CUSTOMER</th>
+            <th>PRODUCT</th>
+            <th>QUANTITY</th>
+            <th>PRIORITY</th>
+            <th>DESTINATION</th>
+            <th>STATUS</th>
+            <th>DATE</th>
+          </tr>
+        </thead>
+        <tbody id="ordersMainTableBody">
+          <tr>
+            <td colspan="8" style="text-align:center; padding: 40px; color: var(--color-text-muted);">
+              Loading orders...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RIGHT: FIFO ORDER QUEUE PANEL (CONNECTED TO REAL PYTHON QUEUE!) -->
+  <div class="sc-card">
+    <div class="sc-card-header" style="background: var(--color-blue-light); border-bottom-color: rgba(37, 99, 235, 0.15);">
+      <div>
+        <div class="sc-card-title" style="color: var(--color-primary-blue);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/><rect x="2" y="8" width="20" height="8" rx="2"/></svg>
+          FIFO ORDER QUEUE
+        </div>
+        <div class="sc-card-subtitle">Connected to Python LinkedListQueue</div>
+      </div>
+      <span class="badge-subtle blue" id="queueSizeBadge">0 Orders</span>
+    </div>
+
+    <div class="sc-card-body">
+      <!-- NEXT ORDER CARD (FRONT OF QUEUE) -->
+      <div id="fifoNextOrderContainer">
+        <div style="text-align:center; padding: 20px; color: var(--color-text-muted);">
+          Checking queue state...
+        </div>
+      </div>
+
+      <!-- UPCOMING QUEUE LIST -->
+      <div style="margin-top: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+          <span style="font-size: 0.76rem; font-weight: 700; text-transform:uppercase; color: var(--color-text-muted); letter-spacing:0.04em;">
+            Upcoming Queue
+          </span>
+          <a href="/ds/queue" style="font-size:0.75rem; color:var(--color-primary-blue); font-weight:600;">Queue Lab →</a>
+        </div>
+        <div class="fifo-queue-list" id="fifoUpcomingQueueList">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PLACE NEW ORDER MODAL ==================== -->
+<div class="modal-backdrop" id="newOrderModalBackdrop">
+  <div class="modal-dialog">
+    <div class="modal-header-v2">
+      <h3 class="modal-title">Create New Customer Order</h3>
+      <button class="modal-close-btn" onclick="closeNewOrderModal()">&times;</button>
+    </div>
+    <form id="newOrderModalForm" onsubmit="handleNewOrderSubmit(event)">
+      <div class="modal-body-v2">
+        <div class="form-group">
+          <label class="form-label">Customer Name *</label>
+          <input type="text" id="modalOrderCustomer" class="form-control" required placeholder="e.g. Ather Mobility R&D" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="modalOrderEmail" class="form-control" placeholder="procure@customer.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" id="modalOrderPhone" class="form-control" placeholder="+91 98888 12345" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Product Item *</label>
+            <select id="modalOrderProduct" class="form-control" required>
+              <option value="">Select Product</option>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quantity *</label>
+            <input type="number" id="modalOrderQty" class="form-control" required min="1" value="20" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Priority Level *</label>
+            <select id="modalOrderPriority" class="form-control">
+              <option value="1">Priority 1 (Critical Express)</option>
+              <option value="2" selected>Priority 2 (Standard Expedited)</option>
+              <option value="3">Priority 3 (Economy)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Delivery Destination Hub *</label>
+            <select id="modalOrderLocation" class="form-control" required>
+              <option value="1">HUB-PUN (Pune Smart Logistics)</option>
+              <option value="2">HUB-MAA (Chennai Harbor Node)</option>
+              <option value="3">HUB-AMD (Ahmedabad Express)</option>
+              <option value="4">HUB-HYD (Hyderabad Cyber Gateway)</option>
+              <option value="5">HUB-JAI (Jaipur Pink City Terminal)</option>
+              <option value="6">HUB-IXC (Chandigarh Northern Hub)</option>
+              <option value="7">HUB-LKO (Lucknow Awadh Freight)</option>
+              <option value="8">HUB-STV (Surat Diamond Coast)</option>
+              <option value="9">HUB-IDR (Indore Malwa Logistics)</option>
+              <option value="10">HUB-BBI (Bhubaneswar Kalinga)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer-v2">
+        <button type="button" class="btn btn-outline" onclick="closeNewOrderModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <span>➕</span> Enqueue Order
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    initOrdersModuleV2();
+  });
+</script>
+{% endblock %}

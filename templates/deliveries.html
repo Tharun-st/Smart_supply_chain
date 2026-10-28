@@ -1,0 +1,160 @@
+{% extends "layout.html" %}
+
+{% block title %}Delivery Network & Routing — ISCS{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Delivery Network</h2>
+    <p class="page-hero-sub">Logistics transit operations and Graph / BFS shortest-hop route discovery.</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button class="btn btn-outline" onclick="openAddRouteModalV2()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Route Edge
+    </button>
+    <a href="/ds/graph" class="btn btn-primary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Graph & BFS Lab
+    </a>
+  </div>
+</div>
+
+<!-- ==================== 4 DELIVERY METRIC CARDS ==================== -->
+<div class="kpi-grid-4">
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Active Deliveries</span>
+      <div class="kpi-icon-pill blue">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="delivStatActive">--</div>
+    <div class="kpi-trend trend-up"><span>In active fulfillment</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Pending Dispatch</span>
+      <div class="kpi-icon-pill amber">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="delivStatPending">--</div>
+    <div class="kpi-trend trend-neutral"><span>Awaiting truck assignment</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">In Transit</span>
+      <div class="kpi-icon-pill purple">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="delivStatTransit">--</div>
+    <div class="kpi-trend trend-up"><span>On road network</span></div>
+  </div>
+
+  <div class="kpi-card-v2">
+    <div class="kpi-header">
+      <span class="kpi-label">Completed</span>
+      <div class="kpi-icon-pill green">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+    </div>
+    <div class="kpi-value" id="delivStatCompleted">--</div>
+    <div class="kpi-trend trend-up"><span>Delivered on time</span></div>
+  </div>
+</div>
+
+<!-- ==================== NETWORK GRAPH VISUALIZATION AREA ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header" style="background: #172554; color:#FFFFFF; border-bottom: none;">
+    <div>
+      <div class="sc-card-title" style="color:#FFFFFF;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Logistics Graph Network Topology (Adjacency List)
+      </div>
+      <div class="sc-card-subtitle" style="color:rgba(255,255,255,0.7);">
+        Interactive visualization of national warehouse nodes, destination hubs, and transit links
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <select id="graphBfsStartSelect" class="form-control" style="width:160px; height:34px; font-size:0.8rem; background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.2);">
+        <option value="WH-1" style="color:#000;">WH-DEL (Delhi)</option>
+        <option value="WH-2" style="color:#000;">WH-BOM (Mumbai)</option>
+        <option value="WH-3" style="color:#000;">WH-BLR (Bengaluru)</option>
+        <option value="WH-4" style="color:#000;">WH-CCU (Kolkata)</option>
+        <option value="WH-5" style="color:#000;">WH-NAG (Nagpur)</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="runGraphBFSV2()">
+        Run BFS Traversal
+      </button>
+    </div>
+  </div>
+
+  <div class="sc-card-body" style="background: #0B1120; padding: 12px; position:relative; min-height: 400px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+    <div id="deliveryLeafletMap" style="height: 420px; width: 100%; border-radius: 0;">
+      <!-- Leaflet Map Rendered by JavaScript -->
+    </div>
+
+    <!-- BFS Traversal Output Strip -->
+    <div id="graphBfsOutputStrip" style="width:100%; margin-top:12px; padding:12px 16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center; color:#fff; font-size:0.8rem;">
+      <div>
+        <strong style="color:var(--color-primary-blue);">BFS Sequence:</strong>
+        <span id="bfsSequenceText" style="font-family:var(--font-mono); margin-left:8px; color:rgba(255,255,255,0.85);">Ready to traverse</span>
+      </div>
+      <div id="bfsMetricsText" style="color:rgba(255,255,255,0.6); font-family:var(--font-mono); font-size:0.75rem;">
+        Time Complexity: O(V + E)
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DELIVERIES LOGISTICS TABLE ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header">
+    <div>
+      <div class="sc-card-title">Live Delivery Shipments</div>
+      <div class="sc-card-subtitle">Real-time status of shipments between warehouses and customer hubs</div>
+    </div>
+    <span class="badge-subtle blue" id="delivCountBadge">0 Shipments</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="sc-table" id="deliveriesTable">
+      <thead>
+        <tr>
+          <th>TRACKING ID</th>
+          <th>ORDER ID</th>
+          <th>SOURCE WAREHOUSE</th>
+          <th>DESTINATION HUB</th>
+          <th>DISPATCH DATE</th>
+          <th>ESTIMATED TIME</th>
+          <th>STATUS</th>
+          <th style="text-align:right;">ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="deliveriesTableBody">
+        <tr>
+          <td colspan="8" style="text-align:center; padding: 40px; color: var(--color-text-muted);">
+            Loading deliveries...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    initDeliveriesModuleV2();
+  });
+</script>
+{% endblock %}

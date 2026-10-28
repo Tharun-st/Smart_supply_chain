@@ -1,0 +1,222 @@
+{% extends "layout.html" %}
+
+{% block title %}Delivery Network | Adjacency List Graph & BFS{% endblock %}
+{% block breadcrumb %}Delivery Network (Graph + BFS){% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-info">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <h2>Logistics Delivery Network</h2>
+      <span class="dsa-badge graph">[Graph + BFS]</span>
+    </div>
+    <p>Weighted graph topology connecting Warehouses, Suppliers, and Customer Hubs via an Adjacency List.</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="showAlgorithmExplanation(
+      'Delivery Network Graph & Breadth-First Search',
+      'Adjacency List + FIFO Queue',
+      'BFS: O(V + E) / Adjacency Lookup: O(deg(V))',
+      'O(V + E)',
+      'The logistics infrastructure is represented as an unweighted/weighted graph where vertices are facilities and edges are road routes. Breadth-First Search (BFS) explores the graph in concentric rings/levels from any origin location using our custom FIFO Queue to discover all reachable fulfillment centers.',
+      [
+        'Adjacency List: Memory-efficient storage mapping Vertex ➔ List of adjacent outbound routes',
+        'BFS Exploration: Explores immediate 1-hop delivery neighbors (Level 1) before 2-hop facilities (Level 2)',
+        'Queue-Driven: The exploration frontier is managed strictly by our custom LinkedListQueue',
+        'Shortest Path Hops: BFS naturally determines the minimum transit hops to all connected locations'
+      ]
+    )">
+      📘 Data Structure Details
+    </button>
+  </div>
+</div>
+
+<!-- ==================== BFS CONTROLS PANEL ==================== -->
+<div class="card" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #ffffff; border: none;">
+  <div class="card-body">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h4 style="font-size: 1.15rem; font-weight: 700; color: #38bdf8;">⚡ Breadth-First Search (BFS) Traversal Lab</h4>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">
+          Select a starting facility node to execute level-by-level BFS network discovery.
+        </p>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <select id="bfsStartSelect" class="form-control" style="width: 260px; background: #334155; color: #fff; border-color: #475569;">
+          <option value="">Loading origin nodes...</option>
+        </select>
+        <button class="btn btn-primary" onclick="executeNetworkBFS()">
+          ▶ Run BFS Traversal
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GRAPH CANVAS + ADJACENCY LIST ==================== -->
+<div class="grid-2col" style="grid-template-columns: 1fr 380px;">
+  <!-- GRAPH CANVAS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span>🌐 Interactive Logistics Graph</span>
+      </div>
+      <div style="display: flex; gap: 10px; font-size: 0.75rem;">
+        <span style="color: #2563eb;">● Warehouses</span>
+        <span style="color: #10b981;">● Suppliers</span>
+        <span style="color: #8b5cf6;">● Customer Hubs</span>
+        <span style="color: #f59e0b;">● Visited (BFS)</span>
+      </div>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="graph-canvas-container">
+        <canvas id="networkCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADJACENCY LIST DISPLAY -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span>📑 Adjacency List Structure</span>
+      </div>
+      <span style="font-size: 0.72rem; color: #64748b;">Vertex ➔ List[Routes]</span>
+    </div>
+    <div class="card-body" style="max-height: 520px; overflow-y: auto;">
+      <div id="adjacencyListContainer" style="font-family: monospace; font-size: 0.82rem; line-height: 1.6;">
+        Loading adjacency list...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== BFS STEP-BY-STEP TRACE LOG ==================== -->
+<div class="card" id="bfsTraceCard" style="display: none;">
+  <div class="card-header">
+    <div class="card-title">
+      <span>👣 BFS Step-by-Step Traversal Trace (Queue Operations)</span>
+      <span class="dsa-badge graph">O(V + E)</span>
+    </div>
+    <span id="bfsSummarySpan" style="font-size: 0.8rem; font-weight: 600; color: #10b981;"></span>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    <div class="step-log-box" id="bfsStepLogs"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let networkVisualizer = null;
+let networkGraphData = null;
+
+async function loadNetwork() {
+  try {
+    const res = await fetch('/api/network');
+    const json = await res.json();
+    if (json.status === 'success') {
+      networkGraphData = json.graph;
+      
+      // Initialize Canvas visualizer
+      if (!networkVisualizer) {
+        networkVisualizer = new NetworkGraphVisualizer('networkCanvas');
+      }
+      networkVisualizer.setData(networkGraphData);
+
+      // Populate Start Node dropdown
+      const select = document.getElementById('bfsStartSelect');
+      select.innerHTML = '';
+      networkGraphData.nodes.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n.id;
+        opt.textContent = `[${n.type.toUpperCase()}] ${n.name}`;
+        if (n.id === 'WH-1') opt.selected = true; // Default Delhi hub
+        select.appendChild(opt);
+      });
+
+      // Render formatted Adjacency List
+      renderAdjacencyList(json.adjacency_list);
+    }
+  } catch (err) {
+    console.error('Failed to load network:', err);
+  }
+}
+
+function renderAdjacencyList(adjList) {
+  const container = document.getElementById('adjacencyListContainer');
+  container.innerHTML = '';
+
+  for (const [nid, node] of Object.entries(adjList)) {
+    const nodeDiv = document.createElement('div');
+    nodeDiv.style.cssText = 'margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1;';
+    
+    let connectionsHtml = '';
+    if (node.connections && node.connections.length > 0) {
+      connectionsHtml = node.connections.map(c => `
+        <div style="padding-left: 18px; color: #334155;">
+          ➔ <strong>${c.destination_name}</strong> 
+          <span style="color: #64748b;">(${c.distance_km} km)</span>
+        </div>
+      `).join('');
+    } else {
+      connectionsHtml = '<div style="padding-left: 18px; color: #94a3b8; font-style: italic;">No outbound routes</div>';
+    }
+
+    nodeDiv.innerHTML = `
+      <div style="color: #2563eb; font-weight: bold;">
+        ${node.name} <small style="color: #64748b;">(${node.type})</small>:
+      </div>
+      ${connectionsHtml}
+    `;
+    container.appendChild(nodeDiv);
+  }
+}
+
+async function executeNetworkBFS() {
+  const startNode = document.getElementById('bfsStartSelect').value;
+  if (!startNode) return;
+
+  try {
+    showToast(`Initiating BFS from origin: ${startNode}...`, 'info');
+    const res = await fetch('/api/network/bfs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ start_node: startNode })
+    });
+    const json = await res.json();
+    if (json.status === 'success') {
+      const r = json.result;
+      
+      // Animate on graph canvas
+      networkVisualizer.animateBFS(r.visited_order, () => {
+        showToast('BFS Traversal Completed! All reachable network facilities visited.', 'success');
+      });
+
+      // Display Step Logs
+      document.getElementById('bfsTraceCard').style.display = 'block';
+      document.getElementById('bfsSummarySpan').textContent = 
+        `Visited ${r.total_visited} locations in ${json.elapsed_ms} ms | Traversal Order: ${r.visited_order.join(' ➔ ')}`;
+
+      const logsBox = document.getElementById('bfsStepLogs');
+      logsBox.innerHTML = '';
+      r.steps.forEach(s => {
+        const item = document.createElement('div');
+        item.className = 'step-log-item';
+        item.innerHTML = `
+          <span class="step-badge">[Step ${s.step}]</span>
+          <strong>${s.action}:</strong> ${s.description} 
+          <br><small style="color: #94a3b8;">Frontier Queue State: [${s.queue_state.join(', ')}]</small>
+        `;
+        logsBox.appendChild(item);
+      });
+    }
+  } catch (err) {
+    showToast('BFS failed: ' + err.message, 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadNetwork);
+</script>
+{% endblock %}

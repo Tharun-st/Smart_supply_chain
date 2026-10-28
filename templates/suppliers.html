@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block title %}Supplier Network — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Supplier Network</h2>
+    <p class="page-hero-sub">Evaluate vendor performance, lead times and supply reliability.</p>
+  </div>
+  <div>
+    <button class="btn btn-primary" onclick="openAddSupplierModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Supplier
+    </button>
+  </div>
+</div>
+
+<!-- ==================== CONTROLS TOOLBAR ==================== -->
+<div class="sc-card" style="margin-bottom: 20px;">
+  <div class="sc-card-body" style="padding: 14px 20px;">
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <!-- Search -->
+      <div style="position:relative; width: 260px;">
+        <input type="text" id="suppSearchInput" class="form-control" placeholder="Search suppliers..." onkeyup="filterSuppliersGrid()" />
+      </div>
+
+      <!-- Availability Filter -->
+      <div style="width: 170px;">
+        <select id="suppAvailabilityFilter" class="form-control" onchange="filterSuppliersGrid()">
+          <option value="">All Statuses</option>
+          <option value="Available">Available</option>
+          <option value="High Reliability">High Reliability</option>
+          <option value="Medium">Medium</option>
+        </select>
+      </div>
+
+      <!-- Sort -->
+      <div style="width: 190px;">
+        <select id="suppSortSelect" class="form-control" onchange="sortSuppliersGrid(this.value)">
+          <option value="reliability">Sort by Reliability</option>
+          <option value="speed">Sort by Delivery Speed</option>
+          <option value="name">Sort by Name</option>
+        </select>
+      </div>
+
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="runSupplierOptimization()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Greedy Ranking
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SUPPLIER PERFORMANCE COMPACT CARDS ==================== -->
+<div class="grid-3col" id="supplierPerformanceCards">
+  <!-- Dynamically injected top performance cards -->
+</div>
+
+<!-- ==================== SUPPLIER DIRECTORY TABLE ==================== -->
+<div class="sc-card">
+  <div class="sc-card-header">
+    <div>
+      <div class="sc-card-title">Vendor Directory & Commercial Terms</div>
+      <div class="sc-card-subtitle">Comprehensive supplier roster and contact directory</div>
+    </div>
+    <span class="badge-subtle blue" id="supplierCountBadge">0 Vendors</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="sc-table" id="suppliersTable">
+      <thead>
+        <tr>
+          <th>CODE</th>
+          <th>SUPPLIER NAME</th>
+          <th>CATEGORY</th>
+          <th>CONTACT PERSON</th>
+          <th>RELIABILITY</th>
+          <th>AVG DELIVERY</th>
+          <th>SUPPLY COST</th>
+          <th>STATUS</th>
+          <th style="text-align:right;">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="suppliersTableBody">
+        <tr>
+          <td colspan="9" style="text-align:center; padding: 40px; color: var(--color-text-muted);">
+            Loading supplier directory...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== ADD / EDIT SUPPLIER MODAL ==================== -->
+<div class="modal-backdrop" id="supplierModalBackdrop">
+  <div class="modal-dialog">
+    <div class="modal-header-v2">
+      <h3 class="modal-title" id="supplierModalTitle">Add Supplier</h3>
+      <button class="modal-close-btn" onclick="closeSupplierModal()">&times;</button>
+    </div>
+    <form id="supplierModalForm" onsubmit="handleSupplierFormSubmit(event)">
+      <div class="modal-body-v2">
+        <input type="hidden" id="modalSuppId" />
+        <div class="form-group">
+          <label class="form-label">Supplier Name *</label>
+          <input type="text" id="modalSuppName" class="form-control" required placeholder="e.g. Apex Semi Labs" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <input type="text" id="modalSuppCategory" class="form-control" required placeholder="Semiconductors" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Person</label>
+            <input type="text" id="modalSuppContact" class="form-control" placeholder="Jane Doe" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="modalSuppEmail" class="form-control" placeholder="vendor@apexsemi.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="modalSuppPhone" class="form-control" placeholder="+91 98888 12345" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Reliability Score (%) *</label>
+            <input type="number" id="modalSuppReliability" class="form-control" required min="1" max="100" value="95" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Avg Delivery Days *</label>
+            <input type="number" id="modalSuppDeliveryDays" class="form-control" required min="0.5" step="0.5" value="2.5" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location / Address</label>
+          <input type="text" id="modalSuppAddress" class="form-control" placeholder="Bengaluru Industrial Area" />
+        </div>
+      </div>
+      <div class="modal-footer-v2">
+        <button type="button" class="btn btn-outline" onclick="closeSupplierModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Supplier</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    initSuppliersModuleV2();
+  });
+</script>
+{% endblock %}

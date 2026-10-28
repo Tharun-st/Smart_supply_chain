@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Intelligent Supply Chain (ISCS)</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-bg);
+      padding: 24px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      padding: 36px 32px;
+    }
+
+    .login-brand-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-box">
+      <div class="login-brand-header">
+        <div class="brand-icon" style="width:42px; height:42px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div>
+          <h2 style="font-size:1.2rem; font-weight:800; color:var(--color-text);">ISCS Portal</h2>
+          <span style="font-size:0.75rem; color:var(--color-text-muted);">Supply Chain Control Center</span>
+        </div>
+      </div>
+
+      <h3 style="font-size:1.35rem; font-weight:800; color:var(--color-text); margin-bottom:6px;">Sign in to ISCS</h3>
+      <p style="font-size:0.85rem; color:var(--color-text-muted); margin-bottom:24px;">Enter your credentials to access the logistics control center.</p>
+
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" placeholder="admin" value="admin" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" value="admin123" required />
+        </div>
+
+        <div style="margin-top:24px;">
+          <a href="/dashboard" class="btn btn-primary" style="width:100%; height:40px; font-size:0.9rem;">
+            Sign In to Dashboard →
+          </a>
+        </div>
+      </form>
+
+      <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--color-border-subtle); text-align:center; font-size:0.75rem; color:var(--color-text-muted);">
+        Default Credentials: <code>admin</code> / <code>admin123</code>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

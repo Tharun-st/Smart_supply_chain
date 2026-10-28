@@ -1,0 +1,262 @@
+{% extends "layout.html" %}
+
+{% block title %}Quick Sort & Search Laboratory — ISCS{% endblock %}
+
+{% block content %}
+<!-- ==================== TOP HERO ==================== -->
+<div class="page-hero">
+  <div>
+    <h2 class="page-hero-title">Algorithms Laboratory</h2>
+    <p class="page-hero-sub">Interactive execution of in-place Quick Sort and divide-and-conquer Binary Search on supply chain records.</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button id="tabBtnQuickSort" class="btn btn-primary btn-sm" onclick="switchLabTab('quicksort')">
+      ⚡ Quick Sort Lab
+    </button>
+    <button id="tabBtnBinarySearch" class="btn btn-outline btn-sm" onclick="switchLabTab('binarysearch')">
+      🔍 Binary Search Lab
+    </button>
+    <a href="/ds/linked-list" class="btn btn-outline btn-sm">DSA Lab Hub</a>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 1: QUICK SORT LABORATORY (Exclusive Sorting Technique)             -->
+<!-- ========================================================================= -->
+<div id="quickSortLabSection" style="display:block;">
+  <!-- SORT INPUT CONTROLS -->
+  <div class="sc-card">
+    <div class="sc-card-body" style="padding: 18px 22px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div>
+          <strong style="font-size:0.95rem; color:var(--color-primary-blue);">⚡ Quick Sort Controller</strong>
+          <span style="font-size:0.8rem; color:var(--color-text-muted); margin-left:8px;">Divide-and-Conquer Pivot Partitioning ($O(n \log n)$)</span>
+        </div>
+        <span class="badge-subtle blue">In-Place Partitioning</span>
+      </div>
+
+      <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;">
+        <!-- Entity Type -->
+        <div class="form-group" style="margin:0; min-width: 180px;">
+          <label class="form-label">Entity Record Dataset</label>
+          <select id="qsEntityTypeSelect" class="form-control" onchange="updateQuickSortFieldOptions()">
+            <option value="product">Products Catalog</option>
+            <option value="supplier">Suppliers & Reliability</option>
+            <option value="order">Customer Orders</option>
+            <option value="inventory">Warehouse Inventory</option>
+            <option value="custom">Custom Numeric Array</option>
+          </select>
+        </div>
+
+        <!-- Sort Field -->
+        <div class="form-group" style="margin:0; min-width: 190px;">
+          <label class="form-label">Sort Key / Attribute</label>
+          <select id="qsSortFieldSelect" class="form-control">
+            <option value="price">Product Price (₹)</option>
+            <option value="stock">Stock Inventory Count</option>
+            <option value="id">Product ID</option>
+            <option value="name">Product Name (Alphabetical)</option>
+          </select>
+        </div>
+
+        <!-- Order Direction -->
+        <div class="form-group" style="margin:0; width: 160px;">
+          <label class="form-label">Sorting Order</label>
+          <select id="qsOrderSelect" class="form-control">
+            <option value="asc">Ascending (Low → High)</option>
+            <option value="desc">Descending (High → Low)</option>
+          </select>
+        </div>
+
+        <!-- Custom Array Input (Hidden by default) -->
+        <div class="form-group" id="qsCustomArrayDiv" style="margin:0; width: 240px; display:none;">
+          <label class="form-label">Comma-Separated Numbers</label>
+          <input type="text" id="qsCustomArrayInput" class="form-control" placeholder="e.g. 45, 12, 89, 23, 7, 56" value="64, 25, 12, 22, 11, 90, 45, 8" />
+        </div>
+
+        <!-- Action Button -->
+        <button class="btn btn-primary" onclick="executeQuickSortLab()" style="height:38px;">
+          ⚡ Run Quick Sort
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 KPI METRICS FOR QUICK SORT -->
+  <div class="kpi-grid-4" id="qsMetricsGrid" style="display:none;">
+    <div class="kpi-card-v2">
+      <div class="kpi-header">
+        <span class="kpi-label">Dataset Size (n)</span>
+        <div class="kpi-icon-pill blue">🔢</div>
+      </div>
+      <div class="kpi-value" id="qsMetricTotal">--</div>
+      <div class="kpi-trend trend-neutral"><span>Records partitioned</span></div>
+    </div>
+
+    <div class="kpi-card-v2">
+      <div class="kpi-header">
+        <span class="kpi-label">Comparisons Taken</span>
+        <div class="kpi-icon-pill amber">⚡</div>
+      </div>
+      <div class="kpi-value" id="qsMetricComparisons">--</div>
+      <div class="kpi-trend trend-up"><span>O(n log n) efficiency</span></div>
+    </div>
+
+    <div class="kpi-card-v2">
+      <div class="kpi-header">
+        <span class="kpi-label">Element Swaps</span>
+        <div class="kpi-icon-pill green">🔄</div>
+      </div>
+      <div class="kpi-value" id="qsMetricSwaps">--</div>
+      <div class="kpi-trend trend-neutral"><span>In-place memory writes</span></div>
+    </div>
+
+    <div class="kpi-card-v2">
+      <div class="kpi-header">
+        <span class="kpi-label">Execution Time</span>
+        <div class="kpi-icon-pill purple">⏱️</div>
+      </div>
+      <div class="kpi-value" id="qsMetricElapsed">-- ms</div>
+      <div class="kpi-trend trend-up"><span>Cache-optimal</span></div>
+    </div>
+  </div>
+
+  <!-- STEP-BY-STEP RECURSIVE PARTITION VISUALIZATION -->
+  <div class="sc-card" id="qsVisualCard" style="display:none;">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">Quick Sort Step-by-Step Partition Trace</div>
+        <div class="sc-card-subtitle">Active recursion tree showing Pivot selection, Left Subarray (&le; Pivot), and Right Subarray (&gt; Pivot)</div>
+      </div>
+      <span class="badge-subtle blue">O(n log n)</span>
+    </div>
+
+    <div class="sc-card-body">
+      <div id="qsStepLogContainer" style="display:flex; flex-direction:column; gap:10px;">
+        <!-- Injected dynamically by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SORTED OUTPUT TABLE -->
+  <div class="sc-card" id="qsResultTableCard" style="display:none; border-left: 5px solid var(--color-primary-blue);">
+    <div class="sc-card-header">
+      <div class="sc-card-title">Quick-Sorted Records Output</div>
+      <span class="badge-subtle green">Fully Ordered</span>
+    </div>
+    <div class="table-responsive">
+      <table class="sc-table">
+        <thead id="qsResultTableHead"></thead>
+        <tbody id="qsResultTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- SECTION 2: BINARY SEARCH LABORATORY                                       -->
+<!-- ========================================================================= -->
+<div id="binarySearchLabSection" style="display:none;">
+  <!-- SEARCH INPUT CONTROLS -->
+  <div class="sc-card">
+    <div class="sc-card-body" style="padding: 16px 20px;">
+      <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;">
+        <div class="form-group" style="margin:0; min-width: 200px;">
+          <label class="form-label">Search Entity Record Type</label>
+          <select id="bsEntityTypeSelect" class="form-control">
+            <option value="product">Products (by Product ID)</option>
+            <option value="supplier">Suppliers (by Supplier ID)</option>
+            <option value="order">Customer Orders (by Order ID)</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin:0; width: 180px;">
+          <label class="form-label">Target ID Key Value *</label>
+          <input type="number" id="bsTargetInput" class="form-control" placeholder="Target ID" value="5" min="1" />
+        </div>
+
+        <button class="btn btn-primary" onclick="executeBinarySearchV2()" style="height:38px;">
+          🔍 Run Binary Search
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 METRICS CARDS FOR BINARY SEARCH -->
+  <div class="kpi-grid-4" id="bsMetricsGrid" style="display:none;">
+    <div class="kpi-card-v2">
+      <div class="kpi-header">
+        <span class="kpi-label">Dataset Size (n)</span>
+        <div class="kpi-icon-pill blue">🔢</div>
+      </div>
+      <div class="kpi-value" id="bsMetricTotal">--</div>
+      <div class="kpi-trend trend-neutral"><span>Sorted records</span></div>
+    </div>
+
+    <div class="kpi-card-v2">
+      <div class="kpi-header">
+        <span class="kpi-label">Comparisons Taken</span>
+        <div class="kpi-icon-pill amber">⚡</div>
+      </div>
+      <div class="kpi-value" id="bsMetricComparisons">--</div>
+      <div class="kpi-trend trend-up"><span id="bsMetricMaxTheo">Max: 4 steps</span></div>
+    </div>
+
+    <div class="kpi-card-v2">
+      <div class="kpi-header">
+        <span class="kpi-label">Search Result</span>
+        <div class="kpi-icon-pill green">🎯</div>
+      </div>
+      <div class="kpi-value" id="bsMetricResult" style="font-size:1.3rem;">--</div>
+      <div class="kpi-trend trend-neutral"><span id="bsMetricFoundIdx">Index: --</span></div>
+    </div>
+
+    <div class="kpi-card-v2">
+      <div class="kpi-header">
+        <span class="kpi-label">Execution Time</span>
+        <div class="kpi-icon-pill purple">⏱️</div>
+      </div>
+      <div class="kpi-value" id="bsMetricElapsed">-- ms</div>
+      <div class="kpi-trend trend-up"><span>O(log n) efficiency</span></div>
+    </div>
+  </div>
+
+  <!-- ARRAY VISUALIZATION & STEP TRACE -->
+  <div class="sc-card" id="bsVisualCard" style="display:none;">
+    <div class="sc-card-header">
+      <div>
+        <div class="sc-card-title">Sorted Array Divide & Conquer Visualization</div>
+        <div class="sc-card-subtitle">Active search window halving with LOW, MID, and HIGH pointers</div>
+      </div>
+      <span class="badge-subtle blue">O(log n)</span>
+    </div>
+
+    <div class="sc-card-body">
+      <div class="bs-array-container" id="bsArrayVisualContainer"></div>
+      <div style="margin-top: 24px;">
+        <h4 style="font-size:0.85rem; font-weight:700; margin-bottom:10px;">Step-by-Step Decision Trace:</h4>
+        <div id="bsStepLogContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECORD DETAILS PAYLOAD -->
+  <div class="sc-card" id="bsRecordResultCard" style="display:none; border-left: 5px solid var(--color-primary-blue);">
+    <div class="sc-card-header">
+      <div class="sc-card-title">Retrieved Record Details</div>
+    </div>
+    <div class="sc-card-body">
+      <pre id="bsRecordJson" style="background:var(--color-bg); padding:16px; border-radius:var(--radius-md); font-family:var(--font-mono); font-size:0.82rem; overflow:auto; max-height:220px;"></pre>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    updateQuickSortFieldOptions();
+    executeQuickSortLab();
+  });
+</script>
+{% endblock %}
